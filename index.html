@@ -133,7 +133,7 @@
   .seg button:disabled { opacity: .4; cursor: not-allowed; }
 
   /* ── KPIs ───────────────────────────────────────────── */
-  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  .kpis { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; }
   @media (max-width: 720px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .wrap { padding: 0 16px 60px; } }
   .kpi { padding: 12px 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); }
   .kpi .lbl { font-size: .78rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
@@ -209,6 +209,20 @@
   .matrix th { color: var(--muted); font-weight: 600; font-size: .78rem; }
   .matrix td { border: 1px solid var(--line); background: #fff; }
   .matrix td.hi { background: #fff4dc; font-weight: 700; }
+  .matrix .sepL { border-left: 2.5px solid var(--navy); }
+  .matrix tr.sepT td { border-top: 2.5px solid var(--navy); }
+  .mk-exits { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 12px; }
+  @media (max-width: 900px) { .mk-exits { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .exit { padding: 12px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); display: grid; grid-template-columns: 46px 1fr; gap: 4px 10px; align-items: center; position: relative; }
+  .exit svg.ph { width: 46px; height: 46px; grid-row: span 2; }
+  .exit .nm { font-weight: 800; font-size: .95rem; line-height: 1.15; }
+  .exit .big { font-size: 1.35rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .exit .f { grid-column: 1 / -1; font-size: .8rem; color: var(--ink-2); }
+  .exit.best { outline: 3px solid var(--ok); outline-offset: -1px; }
+  .exit.best::after { content: '★ más barata'; position: absolute; top: -9px; right: 10px; background: var(--ok); color: #fff; font-size: .7rem; font-weight: 800; padding: 1px 8px; border-radius: 999px; }
+  .btn[aria-pressed="true"] { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .bar { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }
+  .bar > span { display: block; height: 100%; border-radius: 4px; }
 
   /* ── Tab 2 ──────────────────────────────────────────── */
   .proy-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(360px, 1fr); gap: 16px; align-items: start; }
@@ -277,7 +291,7 @@
   <nav class="tabs" role="tablist" aria-label="Secciones">
     <button class="tab-btn" role="tab" aria-selected="true" data-tab="tab-logica"><span class="n">1</span>La lógica</button>
     <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-proy"><span class="n">2</span>La proyección y el simulador</button>
-    <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-clases"><span class="n">3</span>¿Qué tiene que ver con la materia?</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-clases"><span class="n">3</span>El modelo formal</button>
   </nav>
 
   <!-- ═══════════════════════ TAB 1 ═══════════════════════ -->
@@ -290,7 +304,7 @@
       </div>
     </div>
     <div class="card scene-card">
-      <svg id="scene" viewBox="0 0 1400 520" role="img" aria-label="Bóveda animada con palancas de depósitos, ventanilla, ATM y camión de caudales"></svg>
+      <svg id="scene" viewBox="0 0 1400 640" role="img" aria-label="Bóveda animada con palancas de depósitos, ventanilla, ATM y camión de caudales"></svg>
       <div class="scene-bar">
         <button class="btn primary" id="sim-play">⏸ Pausa</button>
         <span class="ctrl">Velocidad
@@ -299,6 +313,12 @@
           </span>
         </span>
         <button class="btn" id="sim-reset">↺ Reiniciar</button>
+        <span class="ctrl">Remesa con
+          <span class="seg" id="vault-dest">
+            <button aria-pressed="true" data-v="cib">CIB · $0</button><button aria-pressed="false" data-v="suc">Otra sucursal</button><button aria-pressed="false" data-v="ban">Otro banco</button>
+          </span>
+        </span>
+        <button class="btn gold" id="vault-nomove">⏸ ¿Y si no la muevo?</button>
         <span class="ctrl">TNA costo de oportunidad <input type="range" id="tna1" min="5" max="80" step="1"><b id="tna1-out" style="font-variant-numeric:tabular-nums"></b></span>
         <span class="ctrl muted small">1 día de simulación ≈ 4 s</span>
       </div>
@@ -370,17 +390,15 @@
     <div class="step-head">
       <span class="step-n">4</span>
       <div>
-        <h2>¿Qué tiene que ver con la materia?</h2>
-        <p>El problema de las bóvedas recorre de punta a punta el bloque de <b>optimización de las clases 15 a 20</b> del repo <i>invo.py</i>: el pronóstico pone los números y la Investigación Operativa toma la decisión.</p>
+        <h2>Del simulador al modelo de optimización</h2>
+        <p>Lo que hicimos con palancas y mapas, escrito como modelo: el <b>MILP de remesas</b>, cómo se programa en <b>PuLP</b> y qué pasa cuando hay <b>varias sucursales a la vez</b> (transporte con transbordo).</p>
       </div>
     </div>
-    <div class="timeline" id="timeline"></div>
-    <div class="grid-2" style="margin-top:16px">
+    <div class="grid-2">
       <div class="card card-pad stack" id="formulacion"></div>
       <div class="card card-pad stack" id="pulp"></div>
     </div>
     <div class="card card-pad" style="margin-top:16px" id="mcf-card"></div>
-    <div class="grid-2" style="margin-top:16px" id="extras"></div>
   </section>
 
   <footer>Material didáctico · Todos los montos, tarifas, coberturas y clientes son ficticios. Los nombres de transportadoras se usan solo como ejemplo, con tarifas inventadas.</footer>
@@ -403,6 +421,8 @@
     <symbol id="ico-bank" viewBox="0 0 64 64"><path d="M32 6 6 20h52z" fill="#16324f"/><rect x="8" y="22" width="48" height="4" fill="#16324f"/><g fill="#24507a"><rect x="12" y="28" width="6" height="20"/><rect x="24" y="28" width="6" height="20"/><rect x="36" y="28" width="6" height="20"/><rect x="46" y="28" width="6" height="20"/></g><rect x="6" y="50" width="52" height="7" fill="#16324f"/></symbol>
     <symbol id="ico-atm" viewBox="0 0 64 64"><rect x="14" y="4" width="36" height="56" rx="4" fill="#2f3b4a"/><rect x="19" y="10" width="26" height="16" rx="2" fill="#7fd1a8"/><rect x="22" y="31" width="20" height="3" fill="#111"/><g fill="#c3cbd4"><rect x="20" y="38" width="6" height="4"/><rect x="29" y="38" width="6" height="4"/><rect x="38" y="38" width="6" height="4"/><rect x="20" y="45" width="6" height="4"/><rect x="29" y="45" width="6" height="4"/><rect x="38" y="45" width="6" height="4"/></g></symbol>
     <symbol id="ico-bag" viewBox="0 0 40 44"><path d="M14 6h12l-3 7c8 3 14 11 14 19 0 7-6 10-17 10S3 39 3 32c0-8 6-16 14-19z" fill="#b08d57" stroke="#7b5f34" stroke-width="2"/><path d="M13 6h14" stroke="#7b5f34" stroke-width="3" stroke-linecap="round"/><text x="20" y="35" text-anchor="middle" font-size="15" font-weight="800" fill="#4c3a1d" font-family="Arial">$</text></symbol>
+    <symbol id="ico-cib" viewBox="0 0 64 64"><rect x="6" y="18" width="52" height="40" rx="3" fill="#127a59"/><rect x="3" y="8" width="58" height="14" rx="3" fill="#0d5c43"/><text x="32" y="19.5" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="Arial">CIB</text><g fill="#bfeedd"><rect x="12" y="27" width="10" height="9"/><rect x="27" y="27" width="10" height="9"/><rect x="42" y="27" width="10" height="9"/></g><rect x="25" y="41" width="14" height="17" fill="#0d5c43"/><circle cx="35" cy="50" r="1.4" fill="#bfeedd"/></symbol>
+    <symbol id="ico-bank2" viewBox="0 0 64 64"><path d="M32 6 6 20h52z" fill="#4a3aa7"/><circle cx="32" cy="15" r="3" fill="#fff"/><rect x="8" y="22" width="48" height="4" fill="#4a3aa7"/><g fill="#8a7de0"><rect x="12" y="28" width="6" height="20"/><rect x="24" y="28" width="6" height="20"/><rect x="36" y="28" width="6" height="20"/><rect x="46" y="28" width="6" height="20"/></g><rect x="6" y="50" width="52" height="7" fill="#4a3aa7"/></symbol>
     <symbol id="ico-bill" viewBox="0 0 30 16"><rect x="0.5" y="0.5" width="29" height="15" rx="2" fill="#3f9a62" stroke="#24603c"/><circle cx="15" cy="8" r="4" fill="none" stroke="#c9eed6" stroke-width="1.5"/></symbol>
     <symbol id="ico-octo" viewBox="0 0 30 24"><rect x="1" y="3" width="28" height="20" rx="2" fill="#7a5a2b" stroke="#4e3a1b"/><rect x="1" y="3" width="28" height="5" fill="#946d35"/><text x="15" y="20" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="Arial">8</text></symbol>
   </defs>
@@ -803,7 +823,7 @@ const Vault = (() => {
   const svg = $('#scene');
   const TOPE = 1200, MIN_HIST = 300, SS = 1.10 * MIN_HIST, SALDO0 = 620;
   const DAY_SECONDS = 4;
-  const st = { t: 0, saldo: SALDO0, ocio: 0, playing: true, speed: 1, hist: [], quiebre: false };
+  const st = { t: 0, saldo: SALDO0, ocio: 0, mov: 0, dest: 'cib', playing: true, speed: 1, hist: [], quiebre: false };
   // pre-historia (para mostrar de dónde sale el mínimo histórico)
   const pre = [];
   for (let k = -30; k < 0; k++) pre.push({ d: k, s: 640 + 110 * Math.sin(k / 3.7) + 40 * Math.cos(k / 1.3) - (k === -12 ? 260 : k === -11 || k === -13 ? 120 : 0) });
@@ -818,7 +838,6 @@ const Vault = (() => {
   for (let x = 0; x < 1080; x += 70) S('line', { x1: x, y1: 425, x2: x - 30, y2: 520, stroke: '#c8cfd8', 'stroke-width': 1 }, svg);
   S('rect', { x: 1080, y: 425, width: 320, height: 95, fill: '#bcc3cc' }, svg);
   for (let x = 1090; x < 1400; x += 46) S('rect', { x, y: 470, width: 24, height: 4, fill: '#f2c94c' }, svg);
-  S('text', { x: 1092, y: 515, 'font-size': 10, fill: '#5d6672', 'font-weight': 700, text: 'CARGA Y DESCARGA' }, svg);
 
   // ── Cliente comercial (póster) ────────────────────────
   const poster = S('g', {}, svg);
@@ -958,6 +977,58 @@ const Vault = (() => {
   S('rect', { x: 1152, y: 436, width: 10, height: 58, fill: '#1f2833' }, truck);
   const truckLabel = S('text', { x: 1238, y: 488, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, fill: '#fff' }, truck);
 
+  // ── Calle: salidas de la remesa (CIB, otra sucursal, otro banco) ──
+  // costo de mover por día según destino, para q = $M/día (tarifas ficticias)
+  const DEST = {
+    cib: { name: 'CIB', sub: 'Centro Interdepósito de Billetes', sym: '#ico-cib', x: 330, color: '#127a59', tag: 'mover: $0 (si hay turno)', cost: q => 0 },
+    suc: { name: 'Otra sucursal', sub: 'la que tiene faltante', sym: '#ico-bank', x: 570, color: '#24507a', tag: 'camión: básico + variable', cost: q => (q > 0 ? 0.30 + q * 2e-5 * 12 : 0) },
+    ban: { name: 'Otro banco', sub: 'compra / venta de billetes', sym: '#ico-bank2', x: 810, color: '#4a3aa7', tag: 'camión + comisión 0,05%', cost: q => (q > 0 ? 0.30 + q * 2e-5 * 12 + q * 0.0005 : 0) },
+  };
+  S('rect', { x: 0, y: 520, width: 1400, height: 120, fill: '#c9cfd6' }, svg);
+  S('rect', { x: 0, y: 520, width: 1400, height: 6, fill: '#aab2bc' }, svg);
+  for (let x = 20; x < 1400; x += 60) S('rect', { x, y: 551, width: 30, height: 3, fill: '#fff', opacity: .8 }, svg);
+  S('text', { x: 24, y: 588, 'font-size': 13, 'font-weight': 800, fill: '#1f2430', 'letter-spacing': 1, text: 'SALIDAS DE LA REMESA' }, svg);
+  S('text', { x: 24, y: 606, 'font-size': 11, fill: '#454a57', text: 'la palanca del camión decide cuánto;' }, svg);
+  S('text', { x: 24, y: 621, 'font-size': 11, fill: '#454a57', text: 'tocá un edificio para elegir a dónde' }, svg);
+  const routeG = S('g', {}, svg);
+  const destEl = {};
+  Object.entries(DEST).forEach(([k, d]) => {
+    const g = S('g', { style: 'cursor:pointer;outline:none', tabindex: 0, role: 'button', 'aria-label': 'Remesa con ' + d.name }, svg);
+    const box = S('rect', { x: d.x, y: 566, width: 200, height: 66, rx: 10, fill: '#fff', stroke: d.color, 'stroke-width': 2 }, g);
+    S('use', { href: d.sym, x: d.x + 8, y: 573, width: 52, height: 52 }, g);
+    S('text', { x: d.x + 68, y: 589, 'font-size': 13.5, 'font-weight': 800, fill: d.color, text: d.name }, g);
+    S('text', { x: d.x + 68, y: 604, 'font-size': 10, fill: '#5b6070', text: d.sub }, g);
+    S('text', { x: d.x + 68, y: 621, 'font-size': 10.5, 'font-weight': 700, fill: '#1f2430', text: d.tag }, g);
+    g.addEventListener('click', () => setDest(k));
+    g.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { setDest(k); e.preventDefault(); } });
+    destEl[k] = { g, box };
+  });
+  let routeSign = null;
+  function drawRoute() {
+    const cam = levers.cam ? levers.cam.value : 0, sign = Math.sign(cam);
+    routeSign = sign + st.dest;
+    routeG.innerHTML = '';
+    const d = DEST[st.dest], cx = d.x + 100;
+    const path = `M1238,515 L1238,540 L${cx},540 L${cx},566`;
+    S('path', { d: path, fill: 'none', stroke: d.color, 'stroke-width': sign ? 3 : 2, 'stroke-dasharray': '7 5', opacity: sign ? 1 : .45, class: sign ? 'arc-main' : '', style: `stroke:${d.color}` }, routeG);
+    if (sign) {
+      const u = S('use', { href: '#ico-truck', width: 26, height: 26, x: -13, y: -13 }, routeG);
+      const am = S('animateMotion', { dur: '2.6s', repeatCount: 'indefinite', path }, u);
+      if (sign < 0) { am.setAttribute('keyPoints', '1;0'); am.setAttribute('keyTimes', '0;1'); am.setAttribute('calcMode', 'linear'); }
+    }
+    Object.entries(destEl).forEach(([k, e]) => {
+      const on = k === st.dest;
+      e.box.setAttribute('stroke-width', on ? 4 : 2);
+      e.box.setAttribute('fill', on ? '#fffbea' : '#fff');
+      e.g.setAttribute('opacity', on ? 1 : .55);
+    });
+  }
+  function setDest(k) {
+    st.dest = k;
+    $$('#vault-dest button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === k)));
+    drawRoute(); updateUI();
+  }
+
   // ── Palancas ──────────────────────────────────────────
   const cable = (x1, y1, x2, y2) => S('path', { d: `M${x1},${y1} L${x2},${y2}`, stroke: '#9aa3ae', 'stroke-width': 2, 'stroke-dasharray': '4 4', fill: 'none' }, svg);
   cable(125, 160, 125, 178); cable(1010, 160, 1010, 196); cable(1189, 160, 1189, 238); cable(1316, 160, 1316, 430);
@@ -984,7 +1055,7 @@ const Vault = (() => {
   // ── KPIs y gráfico chico ──────────────────────────────
   const kpiBox = $('#vault-kpis');
   const kpi = (lbl) => { const d = H('div', { class: 'kpi' }, kpiBox); H('div', { class: 'lbl', text: lbl }, d); const v = H('div', { class: 'val' }, d); const n = H('div', { class: 'note' }, d); return { v, n }; };
-  const K = { dia: kpi('Día'), saldo: kpi('Saldo en bóveda'), flujo: kpi('Flujo neto (dep − ret)'), ocio: kpi('Costo ocioso acumulado') };
+  const K = { dia: kpi('Día'), saldo: kpi('Saldo en bóveda'), flujo: kpi('Flujo neto (dep − ret)'), ocio: kpi('Costo ocioso acumulado'), mov: kpi('Costo de mover acumulado') };
   const alertBox = $('#vault-alert');
   const spark = $('#vault-spark');
 
@@ -1027,12 +1098,15 @@ const Vault = (() => {
     K.flujo.n.textContent = cam ? `remesa: ${cam > 0 ? 'se lleva' : 'trae'} ${fmtM(Math.abs(cam), { d: 0 })}/día` : 'sin remesa';
     K.ocio.v.textContent = fmtM(st.ocio);
     K.ocio.n.textContent = `hoy: ${fmtM(st.saldo * G.iDay)} por día (TNA ${pct(G.tna)})`;
+    K.mov.v.textContent = fmtM(st.mov);
+    K.mov.n.textContent = cam ? `con ${DEST[st.dest].name}: ${fmtM(DEST[st.dest].cost(Math.abs(cam)))} por día` : `destino elegido: ${DEST[st.dest].name}`;
     meterVal.textContent = fmtM(st.saldo, { d: 0 });
     meterFill.setAttribute('width', 400 * clamp(st.saldo / (TOPE * 1.1), 0, 1));
     meterFill.setAttribute('fill', st.saldo < SS ? '#c0392b' : st.saldo > TOPE ? '#b7791f' : '#24507a');
     const nb = Math.round(bricks.length * clamp(st.saldo / TOPE, 0, 1));
     bricks.forEach((b, i) => b.setAttribute('opacity', i < nb ? 1 : 0));
-    truckLabel.textContent = cam > 0 ? '← se lleva' : cam < 0 ? 'trae →' : '';
+    truckLabel.textContent = cam > 0 ? `lleva a ${DEST[st.dest].name}` : cam < 0 ? `trae de ${DEST[st.dest].name}` : '';
+    if ((Math.sign(cam) + st.dest) !== routeSign) drawRoute();
     const outflow = vent + atm - dep + cam;
     let cls = 'ok', msg = '✔ Saldo dentro de la banda: entre el stock de seguridad y el tope.';
     if (st.quiebre) { cls = 'bad'; msg = '✖ ¡Quiebre! La bóveda se quedó sin efectivo: no se puede pagar a los clientes. Traé plata con el camión.'; }
@@ -1059,6 +1133,7 @@ const Vault = (() => {
     st.quiebre = st.saldo <= 0;
     if (st.saldo < 0) st.saldo = 0;
     st.ocio += st.saldo * G.iDay * dt;
+    st.mov += DEST[st.dest].cost(Math.abs(cam)) * dt;
     st.t += dt;
     if (Math.floor(st.t) !== prevDay) { st.hist.push({ d: Math.floor(st.t), s: st.saldo }); if (st.hist.length > 200) st.hist.shift(); }
 
@@ -1115,7 +1190,7 @@ const Vault = (() => {
     st.speed = +b.dataset.v; $$('#sim-speed button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
   }));
   $('#sim-reset').addEventListener('click', () => {
-    Object.assign(st, { t: 0, saldo: SALDO0, ocio: 0, hist: [], quiebre: false });
+    Object.assign(st, { t: 0, saldo: SALDO0, ocio: 0, mov: 0, hist: [], quiebre: false });
     parts.forEach(p => p.el.remove()); parts.length = 0;
     levers.dep.set(80, true); levers.vent.set(45, true); levers.atm.set(60, true); levers.cam.set(0, true);
     drawSpark(); updateUI();
@@ -1128,6 +1203,13 @@ const Vault = (() => {
 
   drawSpark(); updateUI();
   requestAnimationFrame(frame);
+  $$('#vault-dest button').forEach(b => b.addEventListener('click', () => setDest(b.dataset.v)));
+  $('#vault-nomove').addEventListener('click', () => {
+    const M = Math.max(50, Math.round((st.saldo - SS) / 10) * 10);
+    const to = NODE.c7, r = bestRoute(TESORO, to, M, { abono: { brinks: 0, prosegur: 0 }, usados: { brinks: 0, prosegur: 0 } });
+    Markov.open({ source: 'escena de la bóveda', fromName: 'la bóveda (lo que sobra arriba del stock de seguridad)', to, M, cost: r.total, days: 0, label: r.legs.map(legDesc).join(' + '), sym: '#ico-truck' });
+  });
+  drawRoute();
   return { st, SS, TOPE };
 })();
 // ══════════════════════════════════════════════════════════════════
@@ -1492,195 +1574,286 @@ const Prov = (() => {
   return { ctx: null, update, st };
 })();
 // ══════════════════════════════════════════════════════════════════
-//  “¿Y SI NO LO MUEVO?” · cadena de Markov con costo ocioso vs. costo de mover
+//  “¿Y SI NO LA MUEVO?” · las salidas de la plata como cadena de Markov absorbente
+//  Estados (forma canónica: transitorios primero, absorbentes después)
+//    B  Bóveda (plata parada)          → transitorio
+//    Ts Tránsito a otra sucursal       → transitorio
+//    Tb Tránsito a otro banco          → transitorio
+//    C  CIB (Centro Interdepósito)     → absorbente, mover cuesta $0 (si hay turno)
+//    S  Otra sucursal (plata trabajando) → absorbente
+//    K  Otro banco (plata vendida)     → absorbente
 // ══════════════════════════════════════════════════════════════════
 const Markov = (() => {
   const panel = $('#markov-panel');
-  const st = { p: 1, n: 10, ctx: null };
-  const COL = { B: '#c0392b', T: '#d08a00', D: '#1b9e6e' };
+  const st = { pc: 0, ps: 0, pb: 0, n: 10, com: 0.0005, ctx: null, preset: 'stay' };
+  const ST = [
+    { k: 'B', name: 'Bóveda', short: 'Bóv', col: '#e34948', sym: '#ico-vault' },
+    { k: 'Ts', name: 'Tránsito → sucursal', short: 'T→Suc', col: '#eda100', ink: '#9a6500', sym: '#ico-truck' },
+    { k: 'Tb', name: 'Tránsito → banco', short: 'T→Ban', col: '#e87ba4', ink: '#b53b6b', sym: '#ico-truck' },
+    { k: 'C', name: 'CIB', short: 'CIB', col: '#1baf7a', sym: '#ico-cib' },
+    { k: 'S', name: 'Otra sucursal', short: 'Suc', col: '#2a78d6', sym: '#ico-bank' },
+    { k: 'K', name: 'Otro banco', short: 'Ban', col: '#4a3aa7', sym: '#ico-bank2' },
+  ];
+  const PRESETS = [
+    { id: 'stay', label: '⏸ No la muevo', pc: 0, ps: 0, pb: 0 },
+    { id: 'cib', label: '🏛 CIB cuando haya turno', pc: 0.4, ps: 0, pb: 0 },
+    { id: 'suc', label: '🚚 A otra sucursal hoy', pc: 0, ps: 1, pb: 0 },
+    { id: 'ban', label: '🏦 Venderla a otro banco hoy', pc: 0, ps: 0, pb: 1 },
+    { id: 'mix', label: '🎲 Mixta', pc: 0.2, ps: 0.15, pb: 0.05 },
+  ];
 
   panel.innerHTML = `
     <div class="row" style="justify-content:space-between">
-      <h3>¿Y si no lo muevo? La plata como cadena de Markov <span class="class-chip">Repaso clases 3–5 · Markov</span></h3>
+      <h3>¿Y si no la muevo? Las salidas de la plata como cadena de Markov <span class="class-chip">Repaso clases 3–5 · Markov absorbente</span></h3>
       <button class="btn" id="mk-close">✕ cerrar</button>
     </div>
     <p class="sub" id="mk-ctx"></p>
-    <div class="grid-2" style="margin-top:10px">
+    <div class="mk-exits" id="mk-exits"></div>
+    <div id="mk-verdict"></div>
+    <div class="grid-2" style="margin-top:12px">
       <div class="stack">
-        <svg id="mk-graph" viewBox="0 0 640 300" style="width:100%;height:auto;display:block" role="img" aria-label="Cadena de Markov bóveda, tránsito y destino"></svg>
-        <div class="row">
-          <span class="seg" id="mk-presets">
-            <button aria-pressed="true" data-p="1">⏸ No lo muevo (p = 1)</button><button aria-pressed="false" data-p="0">🚚 Lo muevo hoy (p = 0)</button><button aria-pressed="false" data-p="0.8">🤔 Indeciso (p = 0,8)</button>
-          </span>
-        </div>
-        <div class="field"><label for="mk-p">p = probabilidad de que la plata <b>siga parada</b> cada día</label><output id="mk-p-out"></output><input type="range" id="mk-p" min="0" max="1" step="0.01"></div>
-        <div class="field"><label for="mk-n">Horizonte de análisis (días)</label><output id="mk-n-out"></output><input type="range" id="mk-n" min="1" max="30" step="1"></div>
-        <div class="row" style="gap:18px;align-items:flex-start">
-          <div><div class="small muted" style="margin-bottom:4px">Matriz de transición diaria <b>P</b></div><table class="matrix" id="mk-matrix"></table></div>
-          <div><div class="small muted" style="margin-bottom:4px">Estado al día n: <b>π<sub>n</sub> = π<sub>0</sub>·P<sup>n</sup></b></div><table class="matrix" id="mk-pi"></table></div>
+        <svg id="mk-graph" viewBox="0 0 720 465" style="width:100%;height:auto;display:block" role="img" aria-label="Cadena de Markov con las salidas de la plata"></svg>
+        <div class="row" id="mk-presets"></div>
+        <div class="field"><label for="mk-pc"><span style="color:#127a59">●</span> p<sub>CIB</sub>: chance de conseguir <b>turno en el CIB</b> cada día</label><output id="mk-pc-o"></output><input type="range" id="mk-pc" min="0" max="1" step="0.01"></div>
+        <div class="field"><label for="mk-ps"><span style="color:#2a78d6">●</span> p<sub>suc</sub>: chance de mandarla <b>a otra sucursal</b> cada día</label><output id="mk-ps-o"></output><input type="range" id="mk-ps" min="0" max="1" step="0.01"></div>
+        <div class="field"><label for="mk-pb"><span style="color:#4a3aa7">●</span> p<sub>banco</sub>: chance de <b>venderla a otro banco</b> cada día</label><output id="mk-pb-o"></output><input type="range" id="mk-pb" min="0" max="1" step="0.01"></div>
+        <div class="small" id="mk-pq"></div>
+        <div class="grid-2" style="gap:12px">
+          <div class="field"><label for="mk-n">Horizonte (días)</label><output id="mk-n-o"></output><input type="range" id="mk-n" min="1" max="30" step="1"></div>
+          <div class="field"><label for="mk-com">Comisión otro banco</label><output id="mk-com-o"></output><input type="range" id="mk-com" min="0" max="0.003" step="0.0001"></div>
         </div>
       </div>
       <div class="stack">
-        <div class="grid-2" style="gap:10px">
-          <div class="scen stay"><div class="small muted">Se queda en la bóveda <b id="mk-n2"></b> días</div><div class="big" id="mk-stay"></div><div class="small" id="mk-stay-f"></div></div>
-          <div class="scen move"><div class="small muted">Se mueve hoy</div><div class="big" id="mk-move"></div><div class="small" id="mk-move-f"></div></div>
-        </div>
-        <div class="scen" style="border-left:5px solid var(--navy-2)"><div class="small muted">Costo esperado con la cadena (p elegido)</div><div class="big" id="mk-exp"></div><div class="small" id="mk-exp-f"></div></div>
-        <div id="mk-verdict"></div>
-        <svg id="mk-chart" viewBox="0 0 640 300" style="width:100%;height:auto;display:block" role="img" aria-label="Costo acumulado por día"></svg>
+        <div><div class="small muted" style="margin-bottom:4px">Matriz de transición diaria en <b>forma canónica</b> &nbsp;P = [ Q R ; 0 I ]</div><div style="overflow-x:auto"><table class="matrix" id="mk-matrix"></table></div></div>
+        <div><div class="small muted" style="margin-bottom:4px">Dónde está la plata al día n: <b>π<sub>n</sub> = π<sub>0</sub>·P<sup>n</sup></b></div><div style="overflow-x:auto"><table class="matrix" id="mk-pi"></table></div></div>
+        <div class="scen" style="border-left:5px solid var(--navy-2)" id="mk-abs"></div>
       </div>
-    </div>`;
+    </div>
+    <svg id="mk-chart" viewBox="0 0 1000 340" style="width:100%;height:auto;display:block;margin-top:12px" role="img" aria-label="Costo acumulado por día para cada salida"></svg>`;
 
-  const g = $('#mk-graph');
   $('#mk-close').addEventListener('click', () => { panel.hidden = true; });
-  $$('#mk-presets button').forEach(b => b.addEventListener('click', () => { st.p = +b.dataset.p; render(); }));
-  const pIn = $('#mk-p'), nIn = $('#mk-n');
-  pIn.addEventListener('input', () => { st.p = +pIn.value; render(); });
-  nIn.addEventListener('input', () => { st.n = +nIn.value; render(); });
+  const presetBox = $('#mk-presets');
+  PRESETS.forEach(p => {
+    const b = H('button', { class: 'btn', type: 'button', 'data-id': p.id, 'aria-pressed': 'false' }, presetBox);
+    b.textContent = p.label;
+    b.addEventListener('click', () => { Object.assign(st, { pc: p.pc, ps: p.ps, pb: p.pb, preset: p.id }); render(); });
+  });
+  const slider = (id, key) => $('#' + id).addEventListener('input', e => {
+    const others = ['pc', 'ps', 'pb'].filter(k => k !== key).reduce((s, k) => s + st[k], 0);
+    st[key] = Math.min(+e.target.value, Math.max(0, 1 - others));
+    st.preset = null; render();
+  });
+  slider('mk-pc', 'pc'); slider('mk-ps', 'ps'); slider('mk-pb', 'pb');
+  $('#mk-n').addEventListener('input', e => { st.n = +e.target.value; render(); });
+  $('#mk-com').addEventListener('input', e => { st.com = +e.target.value; render(); });
 
-  function chain(ctx) {
-    const dT = ctx.days;
-    const q = dT >= 2 ? 1 - 1 / dT : 0;
-    const p = st.p;
-    const P = [[p, 1 - p, 0], [0, q, 1 - q], [0, 0, 1]];
-    return { P, q, dT };
+  // ── Modelo ──
+  function params(ctx) {
+    const idle = ctx.M * G.iDay;
+    const Cs = ctx.cost, ds = ctx.days;
+    const Cb = 0.30 + ctx.M * 2e-5 * 10 + st.com * ctx.M, db = 1;   // camión corto (~10 km) + comisión
+    const qs = ds >= 2 ? 1 - 1 / ds : 0, qb = 0;
+    const pq = Math.max(0, 1 - st.pc - st.ps - st.pb);
+    const P = [
+      [pq, st.ps, st.pb, st.pc, 0, 0],
+      [0, qs, 0, 0, 1 - qs, 0],
+      [0, 0, qb, 0, 0, 1 - qb],
+      [0, 0, 0, 1, 0, 0],
+      [0, 0, 0, 0, 1, 0],
+      [0, 0, 0, 0, 0, 1],
+    ];
+    const trans = (i, j) => (i === 0 && j === 1 ? Cs : i === 0 && j === 2 ? Cb : 0);
+    const idleOf = [idle, ds >= 1 ? idle : 0, idle, 0, 0, 0];
+    return { P, idle, Cs, ds, Cb, db, qs, qb, pq, trans, idleOf };
   }
-  function simulate(ctx) {
-    const { P, dT } = chain(ctx);
-    const idle = ctx.M * G.iDay, idleT = dT >= 1 ? idle : 0;
-    let pi = [1, 0, 0];
+  // costo del día = costo de la transición de la mañana + costo ocioso del estado en que queda
+  function simulate(pr) {
+    let pi = [1, 0, 0, 0, 0, 0], cum = 0;
     const rows = [{ t: 0, pi: pi.slice(), cum: 0 }];
-    let cum = 0;
     for (let t = 1; t <= st.n; t++) {
-      const moveProb = pi[0] * P[0][1];
-      const nxt = [0, 1, 2].map(j => pi[0] * P[0][j] + pi[1] * P[1][j] + pi[2] * P[2][j]);
-      cum += moveProb * ctx.cost + nxt[0] * idle + nxt[1] * idleT;
-      pi = nxt;
-      rows.push({ t, pi: pi.slice(), cum });
+      const nx = Array(6).fill(0);
+      for (let i = 0; i < 6; i++) for (let j = 0; j < 6; j++) {
+        const f = pi[i] * pr.P[i][j];
+        if (f) { nx[j] += f; cum += f * (pr.trans(i, j) + pr.idleOf[j]); }
+      }
+      pi = nx; rows.push({ t, pi: pi.slice(), cum });
     }
     return rows;
   }
-
-  function drawGraph(ctx) {
-    g.innerHTML = '';
-    const { P, q, dT } = chain(ctx);
-    const N = { B: [105, 172], T: [320, 172], D: [535, 172] };
-    const R = 54;
-    const edge = (a, b, lbl, w, color) => {
-      const [x1, y1] = N[a], [x2, y2] = N[b];
-      S('path', { d: `M${x1 + R + 4},${y1} L${x2 - R - 10},${y2}`, stroke: color, 'stroke-width': 1.5 + 5 * w, fill: 'none', 'marker-end': 'url(#arrow-head-navy)', opacity: w > 0 ? 1 : .25 }, g);
-      S('rect', { x: (x1 + x2) / 2 - 34, y: y1 - 30, width: 68, height: 20, rx: 10, fill: '#fff', stroke: '#d6d3cb' }, g);
-      S('text', { x: (x1 + x2) / 2, y: y1 - 16, 'text-anchor': 'middle', 'font-size': 12.5, 'font-weight': 800, fill: '#1f2430', text: lbl }, g);
-    };
-    const loop = (k, lbl, w, color) => {
-      const [x, y] = N[k];
-      S('path', { d: `M${x - 22},${y - R + 4} C${x - 50},${y - R - 70} ${x + 50},${y - R - 70} ${x + 22},${y - R + 4}`, stroke: color, 'stroke-width': 1.5 + 5 * w, fill: 'none', 'marker-end': 'url(#arrow-head-navy)', opacity: w > 0 ? 1 : .25 }, g);
-      S('text', { x, y: y - R - 60, 'text-anchor': 'middle', 'font-size': 12.5, 'font-weight': 800, fill: '#1f2430', text: lbl }, g);
-    };
-    loop('B', `p = ${nf(P[0][0], 2)}`, P[0][0], COL.B);
-    loop('T', `q = ${nf(q, 2)}`, q, COL.T);
-    loop('D', '1', 1, COL.D);
-    edge('B', 'T', `1−p = ${nf(P[0][1], 2)}`, P[0][1], '#24507a');
-    edge('T', 'D', `1−q = ${nf(P[1][2], 2)}`, P[1][2], '#24507a');
-    const node = (k, sym, title, sub, color) => {
-      const [x, y] = N[k];
-      S('circle', { cx: x, cy: y, r: R, fill: '#fff', stroke: color, 'stroke-width': 4 }, g);
-      S('use', { href: sym, x: x - 30, y: y - 32, width: 60, height: 60 }, g);
-      S('text', { x, y: y + R + 20, 'text-anchor': 'middle', 'font-size': 13.5, 'font-weight': 800, fill: '#1f2430', text: title }, g);
-      S('text', { x, y: y + R + 37, 'text-anchor': 'middle', 'font-size': 11.5, fill: '#5b6070', text: sub }, g);
-    };
-    node('B', '#ico-vault', 'Bóveda', `plata parada: ${fmtM(ctx.M * G.iDay)}/día`, COL.B);
-    node('T', ctx.sym, 'En tránsito', dT >= 1 ? `${dT} día${dT > 1 ? 's' : ''} · costo mover ${fmtM(ctx.cost)}` : `mismo día · costo ${fmtM(ctx.cost)}`, COL.T);
-    node('D', '#ico-bank', 'Sucursal destino', 'plata trabajando: $0 ocioso', COL.D);
+  // Cadena absorbente: N = (I − Q)⁻¹ (Q es triangular superior: inversa directa)
+  function absorption(pr) {
+    if (pr.pq >= 1 - 1e-9) return null;
+    const a = 1 - pr.pq;
+    const N00 = 1 / a, N01 = st.ps / (a * (1 - pr.qs)), N02 = st.pb / (a * (1 - pr.qb));
+    const cB = pr.pq * pr.idleOf[0] + st.ps * (pr.Cs + pr.idleOf[1]) + st.pb * (pr.Cb + pr.idleOf[2]);
+    const cTs = pr.qs * pr.idleOf[1], cTb = pr.qb * pr.idleOf[2];
+    return { N00, N01, N02, pC: st.pc / a, pS: st.ps / a, pK: st.pb / a, steps: N00 + N01 + N02, cost: N00 * cB + N01 * cTs + N02 * cTb };
   }
 
-  function drawChart(ctx, rows) {
-    const c = $('#mk-chart');
-    c.innerHTML = '';
-    const W = 640, Hh = 300, L = 70, Rr = 16, T = 16, B = 96;
-    const idle = ctx.M * G.iDay;
-    const moveCost = t => ctx.cost + Math.min(t, ctx.days) * idle;
-    const stay = t => t * idle;
-    const ymax = Math.max(stay(st.n), moveCost(st.n), rows[rows.length - 1].cum) * 1.12 || 1;
-    const X = t => L + (W - L - Rr) * t / st.n, Y = v => T + (Hh - T - B) * (1 - v / ymax);
+  // ── Grafo con “fotos” ──
+  function drawGraph(pr) {
+    const g = $('#mk-graph'); g.innerHTML = '';
+    const POS = { B: [105, 225], Ts: [355, 225], Tb: [355, 362], C: [600, 92], S: [600, 225], K: [600, 362] };
+    const R = { B: 52, Ts: 38, Tb: 38, C: 40, S: 40, K: 40 };
+    const lbl = (x, y, txt, col) => {
+      const w = txt.length * 6.6 + 14;
+      S('rect', { x: x - w / 2, y: y - 11, width: w, height: 21, rx: 10, fill: '#fff', stroke: col || '#d6d3cb' }, g);
+      S('text', { x, y: y + 4, 'text-anchor': 'middle', 'font-size': 11.5, 'font-weight': 800, fill: '#1f2430', text: txt }, g);
+    };
+    const edge = (a, b, bend, w, col, text, tpos = 0.5) => {
+      const A = POS[a], Bp = POS[b];
+      const mx = (A[0] + Bp[0]) / 2, my = (A[1] + Bp[1]) / 2, dx = Bp[0] - A[0], dy = Bp[1] - A[1];
+      const c = [mx - dy * bend, my + dx * bend];
+      const u = (p, q) => { const L = Math.hypot(q[0] - p[0], q[1] - p[1]); return [(q[0] - p[0]) / L, (q[1] - p[1]) / L]; };
+      const ua = u(A, c), ub = u(Bp, c);
+      const s = [A[0] + ua[0] * (R[a] + 3), A[1] + ua[1] * (R[a] + 3)], e = [Bp[0] + ub[0] * (R[b] + 6), Bp[1] + ub[1] * (R[b] + 6)];
+      S('path', { d: `M${s[0]},${s[1]} Q${c[0]},${c[1]} ${e[0]},${e[1]}`, fill: 'none', stroke: col, 'stroke-width': 1.5 + 5 * w, 'marker-end': 'url(#arrow-head-navy)', opacity: w > 0 ? 1 : .22 }, g);
+      const [lx, ly] = quadPoint(s, c, e, tpos);
+      lbl(lx, ly, text, w > 0 ? col : '#ddd');
+    };
+    const loop = (k, p, col) => {
+      const [x, y] = POS[k], r = R[k];
+      S('path', { d: `M${x - 18},${y - r + 3} C${x - 46},${y - r - 58} ${x + 46},${y - r - 58} ${x + 18},${y - r + 3}`, fill: 'none', stroke: col, 'stroke-width': 1.5 + 5 * p, 'marker-end': 'url(#arrow-head-navy)', opacity: p > 0 ? 1 : .22 }, g);
+      S('text', { x, y: y - r - 50, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 800, fill: '#1f2430', text: k === 'B' ? `quedarse ${nf(p, 2)}` : nf(p, 2) }, g);
+    };
+    loop('B', pr.pq, '#e34948');
+    loop('Ts', pr.qs, '#eda100');
+    edge('B', 'C', -0.18, st.pc, '#1baf7a', `p_CIB ${nf(st.pc, 2)} · $0`, 0.45);
+    edge('B', 'Ts', 0, st.ps, '#2a78d6', `p_suc ${nf(st.ps, 2)} · ${fmtM(pr.Cs)}`, 0.5);
+    edge('B', 'Tb', -0.12, st.pb, '#4a3aa7', `p_banco ${nf(st.pb, 2)} · ${fmtM(pr.Cb)}`, 0.5);
+    edge('Ts', 'S', 0, 1 - pr.qs, '#2a78d6', nf(1 - pr.qs, 2), 0.5);
+    edge('Tb', 'K', 0, 1, '#4a3aa7', '1,00', 0.5);
+    const node = (k, title, sub, absorbing) => {
+      const [x, y] = POS[k], r = R[k], s = ST.find(z => z.k === k);
+      if (absorbing) S('circle', { cx: x, cy: y, r: r + 5, fill: 'none', stroke: s.col, 'stroke-width': 2 }, g);
+      S('circle', { cx: x, cy: y, r, fill: '#fff', stroke: s.col, 'stroke-width': 4 }, g);
+      const sym = k === 'Ts' ? (st.ctx.sym || '#ico-truck') : s.sym;
+      S('use', { href: sym, x: x - r * 0.58, y: y - r * 0.6, width: r * 1.16, height: r * 1.16 }, g);
+      const ty = k === 'C' ? y - r - 26 : y + r + (absorbing ? 21 : 17);
+      S('text', { x, y: ty, 'text-anchor': 'middle', 'font-size': 12.5, 'font-weight': 800, fill: '#1f2430', text: title }, g);
+      if (sub) S('text', { x, y: ty + 14, 'text-anchor': 'middle', 'font-size': 10.5, fill: '#5b6070', text: sub }, g);
+    };
+    node('B', 'Bóveda', `parada: ${fmtM(pr.idle)}/día`, false);
+    node('Ts', 'Tránsito', pr.ds ? `${pr.ds} día${pr.ds > 1 ? 's' : ''}` : 'mismo día', false);
+    node('Tb', 'Tránsito', '1 día', false);
+    node('C', 'CIB · $0', 'Centro Interdepósito', true);
+    node('S', st.ctx.to.name, 'plata trabajando', true);
+    node('K', 'Otro banco', 'plata vendida', true);
+    S('text', { x: 10, y: 458, 'font-size': 10.5, fill: '#6f7482', text: 'doble círculo = estado absorbente (la plata ya no vuelve a la bóveda) · grosor de la flecha = probabilidad' }, g);
+  }
+
+  // ── Gráfico de costo acumulado ──
+  function drawChart(pr, rows) {
+    const c = $('#mk-chart'); c.innerHTML = '';
+    const W = 1000, Hh = 340, L = 78, Rr = 170, T = 16, B = 92, n = st.n;
+    const stay = t => t * pr.idle;
+    const suc = t => pr.Cs + Math.min(t, pr.ds) * pr.idleOf[1];
+    const ban = t => pr.Cb + Math.min(t, 1) * pr.idle;
+    const ymax = Math.max(stay(n), suc(n), ban(n), rows[rows.length - 1].cum) * 1.1 || 1;
+    const X = t => L + (W - L - Rr) * t / n, Y = v => T + (Hh - T - B) * (1 - v / ymax);
     for (let k = 0; k <= 4; k++) {
       const v = ymax * k / 4;
       S('line', { x1: L, x2: W - Rr, y1: Y(v), y2: Y(v), stroke: '#eceae4' }, c);
       S('text', { x: L - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 11, fill: '#6f7482', text: fmtM(v) }, c);
     }
-    const ticks = st.n <= 15 ? 1 : 5;
-    for (let t = 0; t <= st.n; t += ticks) S('text', { x: X(t), y: Hh - B + 16, 'text-anchor': 'middle', 'font-size': 11, fill: '#6f7482', text: t }, c);
+    const tick = n <= 15 ? 1 : 5;
+    for (let t = 0; t <= n; t += tick) S('text', { x: X(t), y: Hh - B + 16, 'text-anchor': 'middle', 'font-size': 11, fill: '#6f7482', text: t }, c);
     S('text', { x: W - Rr, y: Hh - B + 30, 'text-anchor': 'end', 'font-size': 11, fill: '#6f7482', text: 'días' }, c);
-    const dstar = ctx.cost / Math.max(idle, 1e-12) + ctx.days;
-    if (dstar <= st.n) {
-      S('line', { x1: X(dstar), x2: X(dstar), y1: T, y2: Hh - B, stroke: '#16324f', 'stroke-dasharray': '4 4' }, c);
-      S('text', { x: X(dstar) + 4, y: T + 12, 'font-size': 11, 'font-weight': 700, fill: '#16324f', text: `equilibrio ≈ día ${nf(dstar, 1)}` }, c);
-    }
-    const line = (fn, color, dash, label) => {
+    const labs = [];
+    const line = (fn, col, w, dash, name) => {
       const pts = [];
-      for (let t = 0; t <= st.n; t += 0.25) pts.push([X(t), Y(fn(t))]);
-      S('path', { d: 'M' + pts.map(p => p.map(v => v.toFixed(1)).join(',')).join('L'), fill: 'none', stroke: color, 'stroke-width': 2.4, 'stroke-dasharray': dash || '' }, c);
-      const [lx, ly] = pts[pts.length - 1];
-      return { lx, ly, label, color };
+      for (let t = 0; t <= n + 1e-9; t += 0.25) pts.push([X(t), Y(fn(t))]);
+      S('path', { d: 'M' + pts.map(p => p.map(v => v.toFixed(1)).join(',')).join('L'), fill: 'none', stroke: col, 'stroke-width': w, 'stroke-dasharray': dash || '' }, c);
+      labs.push({ y: pts[pts.length - 1][1], name, col, v: fn(n) });
     };
-    const labs = [
-      line(stay, COL.B, '', 'se queda'),
-      line(moveCost, COL.D, '', 'se mueve hoy'),
-    ];
-    S('path', { d: 'M' + rows.map(r => `${X(r.t).toFixed(1)},${Y(r.cum).toFixed(1)}`).join('L'), fill: 'none', stroke: '#24507a', 'stroke-width': 2.4, 'stroke-dasharray': '6 4' }, c);
-    rows.forEach(r => S('circle', { cx: X(r.t), cy: Y(r.cum), r: 3, fill: '#24507a' }, c));
-    labs.push({ lx: X(st.n), ly: Y(rows[rows.length - 1].cum), label: `esperado (p=${nf(st.p, 2)})`, color: '#24507a' });
-    labs.sort((a, b) => a.ly - b.ly);
+    line(stay, '#e34948', 2.4, '', 'se queda');
+    line(() => 0, '#1baf7a', 2.4, '', 'CIB hoy');
+    line(suc, '#2a78d6', 2.4, '', 'otra sucursal hoy');
+    line(ban, '#4a3aa7', 2.4, '', 'otro banco hoy');
+    S('path', { d: 'M' + rows.map(r => `${X(r.t).toFixed(1)},${Y(r.cum).toFixed(1)}`).join('L'), fill: 'none', stroke: '#16324f', 'stroke-width': 2.6, 'stroke-dasharray': '6 4' }, c);
+    rows.forEach(r => S('circle', { cx: X(r.t), cy: Y(r.cum), r: 3, fill: '#16324f' }, c));
+    labs.push({ y: Y(rows[rows.length - 1].cum), name: 'esperado (cadena)', col: '#16324f', v: rows[rows.length - 1].cum });
+    labs.sort((a, b) => a.y - b.y);
     let lastY = -99;
-    labs.forEach(l => { const y = Math.max(l.ly, lastY + 13); lastY = y; S('text', { x: l.lx - 4, y: y - 5, 'text-anchor': 'end', 'font-size': 11.5, 'font-weight': 700, fill: l.color, text: l.label }, c); });
-    // franja de estados π_t
-    const sy = Hh - B + 42, sh = 30, bw = (W - L - Rr) / (st.n + 1);
-    S('text', { x: L - 6, y: sy + 19, 'text-anchor': 'end', 'font-size': 11, fill: '#6f7482', text: 'π(t)' }, c);
+    labs.forEach(l => { const y = Math.max(l.y, lastY + 15); lastY = y; S('text', { x: W - Rr + 8, y: y + 4, 'font-size': 11.5, 'font-weight': 700, fill: l.col, text: `${l.name} ${fmtM(l.v)}` }, c); });
+    const dSuc = pr.Cs / Math.max(pr.idle, 1e-12) + pr.ds, dBan = pr.Cb / Math.max(pr.idle, 1e-12) + 1;
+    [[dSuc, '#2a78d6'], [dBan, '#4a3aa7']].forEach(([d, col]) => {
+      if (d > n) return;
+      S('line', { x1: X(d), x2: X(d), y1: T, y2: Hh - B, stroke: col, 'stroke-dasharray': '3 4', opacity: .8 }, c);
+      S('circle', { cx: X(d), cy: Y(stay(d)), r: 4.5, fill: '#fff', stroke: col, 'stroke-width': 2 }, c);
+    });
+    // franja π(t)
+    const sy = Hh - B + 40, sh = 28, bw = (W - L - Rr) / (n + 1);
+    S('text', { x: L - 6, y: sy + 18, 'text-anchor': 'end', 'font-size': 11, fill: '#6f7482', text: 'π(t)' }, c);
     rows.forEach(r => {
       let y0 = sy;
-      ['B', 'T', 'D'].forEach((k, j) => {
-        const h = sh * r.pi[j];
-        if (h > 0.2) S('rect', { x: L + r.t * bw + 1, y: y0, width: Math.max(1, bw - 2), height: h, fill: COL[k], rx: 1.5 }, c);
-        y0 += h;
-      });
+      ST.forEach((s, j) => { const h = sh * r.pi[j]; if (h > 0.2) S('rect', { x: L + r.t * bw + 1, y: y0, width: Math.max(1, bw - 2), height: h, fill: s.col, rx: 1.5 }, c); y0 += h; });
     });
-    const lg = [['B', 'Bóveda'], ['T', 'Tránsito'], ['D', 'Destino']];
-    lg.forEach(([k, name], i) => { S('rect', { x: L + i * 110, y: Hh - 16, width: 11, height: 11, rx: 2, fill: COL[k] }, c); S('text', { x: L + i * 110 + 16, y: Hh - 6.5, 'font-size': 11.5, fill: '#454a57', text: name }, c); });
+    ST.forEach((s, i) => { S('rect', { x: L + i * 128, y: Hh - 15, width: 11, height: 11, rx: 2, fill: s.col }, c); S('text', { x: L + i * 128 + 16, y: Hh - 5.5, 'font-size': 11, fill: '#454a57', text: s.name }, c); });
   }
 
   function render() {
     const ctx = st.ctx;
     if (!ctx) return;
-    pIn.value = st.p; nIn.value = st.n;
-    $('#mk-p-out').textContent = nf(st.p, 2);
-    $('#mk-n-out').textContent = st.n + ' días';
-    $$('#mk-presets button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.p === st.p)));
-    $('#mk-ctx').innerHTML = `Envío analizado (${ctx.source}): <b>${fmtM(ctx.M, { d: 0 })}</b> del ${ctx.from.name} a <b>${ctx.to.name}</b> por ${ctx.label}. Costo de moverlo: <b>${fmtM(ctx.cost)}</b>. Costo ocioso = monto × TNA/365 × días = ${fmtM(ctx.M, { d: 0 })} × ${pct(G.tna)}/365 = <b>${fmtM(ctx.M * G.iDay)} por día</b>.`;
-    const { P } = chain(ctx);
-    const names = ['Bóveda', 'Tránsito', 'Destino'];
-    $('#mk-matrix').innerHTML = `<tr><th></th>${names.map(n => `<th>${n}</th>`).join('')}</tr>` +
-      P.map((r, i) => `<tr><th>${names[i]}</th>${r.map(v => `<td class="${v > 0 && v < 1 ? 'hi' : ''}">${nf(v, 2)}</td>`).join('')}</tr>`).join('');
-    const rows = simulate(ctx);
+    const pr = params(ctx);
+    ['pc', 'ps', 'pb'].forEach(k => { $('#mk-' + k).value = st[k]; $('#mk-' + k + '-o').textContent = nf(st[k], 2); });
+    $('#mk-n').value = st.n; $('#mk-n-o').textContent = st.n + ' días';
+    $('#mk-com').value = st.com; $('#mk-com-o').textContent = nf(st.com * 100, 2) + '%';
+    $('#mk-pq').innerHTML = `→ p<sub>quedarse</sub> = 1 − p<sub>CIB</sub> − p<sub>suc</sub> − p<sub>banco</sub> = <b>${nf(pr.pq, 2)}</b> (las filas de P suman 1)`;
+    $$('#mk-presets button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.id === st.preset)));
+    const from = ctx.fromName || `la bóveda del ${ctx.from.name}`;
+    $('#mk-ctx').innerHTML = `Tenés <b>${fmtM(ctx.M, { d: 0 })}</b> parados en ${from}. Cada día que se quedan cuestan monto × TNA/365 = ${fmtM(ctx.M, { d: 0 })} × ${pct(G.tna)}/365 = <b>${fmtM(pr.idle)}</b>. ` +
+      `Salidas: <b>CIB</b> ($0, si hay turno), <b>${ctx.to.name}</b> por ${ctx.label} (${fmtM(pr.Cs)}) u <b>otro banco</b> (camión + comisión: ${fmtM(pr.Cb)}).`;
+
+    // salidas de hoy (arriba)
+    const ex = [
+      { k: 'B', title: `Se queda ${st.n} días`, v: st.n * pr.idle, f: `${fmtM(ctx.M, { d: 0 })} × ${pct(G.tna)}/365 × ${st.n} días. Al día ${st.n} sigue parada.` },
+      { k: 'C', title: 'CIB hoy', v: 0, f: 'Centro Interdepósito de Billetes: mover cuesta $0, pero hace falta turno.' },
+      { k: 'S', title: `A ${ctx.to.name} hoy`, v: pr.Cs + pr.ds * pr.idleOf[1], f: `${fmtM(pr.Cs)} de ${ctx.label}${pr.ds ? ` + ${pr.ds} día${pr.ds > 1 ? 's' : ''} en tránsito` : ''}. Allá cubre un faltante.` },
+      { k: 'K', title: 'A otro banco hoy', v: pr.Cb + pr.idle, f: `camión corto ${fmtM(0.30 + ctx.M * 2e-4)} + comisión ${nf(st.com * 100, 2)}% (${fmtM(st.com * ctx.M)}) + 1 día de tránsito.` },
+    ];
+    const minV = Math.min(...ex.map(e => e.v));
+    $('#mk-exits').innerHTML = ex.map(e => { const s = ST.find(z => z.k === e.k); return `
+      <div class="exit ${e.v === minV ? 'best' : ''}" style="border-left:5px solid ${s.col}">
+        <svg class="ph" viewBox="0 0 64 64"><use href="${s.sym}" width="64" height="64"/></svg>
+        <div class="nm">${e.title}</div><div class="big">${fmtM(e.v)}</div><div class="f">${e.f}</div>
+      </div>`; }).join('');
+
+    // matriz canónica
+    const P = pr.P;
+    $('#mk-matrix').innerHTML = `<tr><th></th>${ST.map((s, j) => `<th class="${j === 3 ? 'sepL' : ''}" style="color:${s.ink || s.col}">${s.short}</th>`).join('')}</tr>` +
+      P.map((r, i) => `<tr class="${i === 3 ? 'sepT' : ''}"><th style="color:${ST[i].ink || ST[i].col}">${ST[i].short}</th>${r.map((v, j) => `<td class="${v > 0 && v < 1 ? 'hi' : ''} ${j === 3 ? 'sepL' : ''}">${nf(v, 2)}</td>`).join('')}</tr>`).join('') +
+      `<tr><td colspan="7" class="small muted" style="border:0;text-align:left;padding-top:6px">arriba a la izquierda <b>Q</b> (transitorios) · arriba a la derecha <b>R</b> (a absorbentes) · abajo <b>0</b> e <b>I</b></td></tr>`;
+    const rows = simulate(pr);
     const piN = rows[rows.length - 1].pi;
-    $('#mk-pi').innerHTML = `<tr>${names.map(n => `<th>${n}</th>`).join('')}</tr><tr>${piN.map(v => `<td>${nf(v, 3)}</td>`).join('')}</tr>`;
-    const idle = ctx.M * G.iDay;
-    $('#mk-n2').textContent = st.n;
-    $('#mk-stay').textContent = fmtM(st.n * idle);
-    $('#mk-stay-f').innerHTML = `${fmtM(ctx.M, { d: 0 })} × ${pct(G.tna)}/365 × ${st.n} días<br><span class="muted">y al día ${st.n} la plata sigue ahí: el problema no desaparece</span>`;
-    const mv = ctx.cost + ctx.days * idle;
-    $('#mk-move').textContent = fmtM(mv);
-    $('#mk-move-f').innerHTML = `${fmtM(ctx.cost)} de transporte${ctx.days ? ` + ${ctx.days} día${ctx.days > 1 ? 's' : ''} de tránsito ocioso (${fmtM(ctx.days * idle)})` : ''}`;
-    const exp = rows[rows.length - 1].cum;
-    $('#mk-exp').textContent = fmtM(exp);
-    const expDays = st.p < 1 ? 1 / (1 - st.p) : Infinity;
-    $('#mk-exp-f').innerHTML = `Días esperados parada en bóveda = 1/(1−p) = ${isFinite(expDays) ? nf(expDays, 1) : '∞'} · prob. de seguir en bóveda al día ${st.n}: ${nf(piN[0], 3)}`;
-    const dstar = ctx.cost / Math.max(idle, 1e-12);
-    const better = st.n * idle > mv;
-    $('#mk-verdict').innerHTML = `<div class="alert ${better ? 'warn' : 'ok'}">${better
-      ? `⚠ En ${st.n} días, tenerla quieta (${fmtM(st.n * idle)}) cuesta más que moverla (${fmtM(mv)}). Equilibrio: <b>d* = costo de mover / (monto × TNA/365) ≈ ${nf(dstar, 1)} días</b>.`
-      : `✔ En ${st.n} días todavía conviene esperar: quieta cuesta ${fmtM(st.n * idle)} y moverla ${fmtM(mv)}. Recién después de <b>d* ≈ ${nf(dstar, 1)} días</b> conviene moverla.`}</div>`;
-    drawGraph(ctx);
-    drawChart(ctx, rows);
+    $('#mk-pi').innerHTML = `<tr>${ST.map(s => `<th style="color:${s.ink || s.col}">${s.short}</th>`).join('')}</tr><tr>${piN.map(v => `<td>${nf(v, 3)}</td>`).join('')}</tr>`;
+
+    // análisis de absorción
+    const ab = absorption(pr);
+    const bar = (p, col) => `<div class="bar"><span style="width:${(p * 100).toFixed(1)}%;background:${col}"></span></div>`;
+    $('#mk-abs').innerHTML = ab ? `
+      <div class="small muted">Largo plazo · cadena absorbente · <b>N = (I − Q)⁻¹</b></div>
+      <div class="small" style="margin:4px 0 8px">N<sub>Bóv,Bóv</sub> = 1/(1 − p<sub>quedarse</sub>) = <b>${nf(ab.N00, 2)}</b> visitas a la bóveda (contando hoy) → paga ocioso <b>${nf(ab.N00 - 1, 2)}</b> días en promedio.
+        Días hasta que la plata llega a destino: <b>${nf(ab.steps - 1, 2)}</b>.</div>
+      <table class="cost-table"><tbody>
+        <tr><td style="width:42%">Termina en CIB</td><td style="width:40%">${bar(ab.pC, '#1baf7a')}</td><td class="num">${nf(ab.pC * 100, 1)}%</td></tr>
+        <tr><td>Termina en ${ctx.to.name}</td><td>${bar(ab.pS, '#2a78d6')}</td><td class="num">${nf(ab.pS * 100, 1)}%</td></tr>
+        <tr><td>Termina en otro banco</td><td>${bar(ab.pK, '#4a3aa7')}</td><td class="num">${nf(ab.pK * 100, 1)}%</td></tr>
+        <tr class="total"><td colspan="2">Costo esperado total hasta que sale (N·c)</td><td class="num">${fmtM(ab.cost)}</td></tr>
+      </tbody></table>
+      <div class="small muted" style="margin-top:4px">Probabilidad de absorción en cada salida = p<sub>salida</sub> / (1 − p<sub>quedarse</sub>).</div>`
+      : `<div class="small muted">Largo plazo · cadena absorbente</div><div class="big" style="color:var(--bad)">∞</div>
+         <div class="small">Con p<sub>quedarse</sub> = 1 la matriz (I − Q) no se puede invertir: la plata <b>nunca</b> llega a un estado absorbente y el costo ocioso crece sin límite. Al día ${st.n} ya lleva ${fmtM(st.n * pr.idle)}.</div>`;
+
+    // veredicto
+    const dSuc = pr.Cs / Math.max(pr.idle, 1e-12) + pr.ds, dBan = pr.Cb / Math.max(pr.idle, 1e-12) + 1;
+    const mover = pr.Cs + pr.ds * pr.idleOf[1] <= pr.Cb + pr.idle ? { n: ctx.to.name, d: dSuc } : { n: 'otro banco', d: dBan };
+    $('#mk-verdict').innerHTML = `<div class="alert ok">📌 <b>Si hay turno en el CIB, es la mejor salida:</b> mover cuesta $0 y la plata deja de estar ociosa hoy.
+      Sin turno, la salida más barata es <b>${mover.n}</b>, y conviene frente a quedarse si la plata va a estar parada más de <b>d* ≈ ${nf(mover.d, 1)} días</b>
+      (costo de mover / costo ocioso por día). En ${st.n} días, quedarse cuesta ${fmtM(st.n * pr.idle)}.</div>`;
+
+    drawGraph(pr);
+    drawChart(pr, rows);
   }
 
   function open(ctx) {
@@ -2174,49 +2347,13 @@ const Sim = (() => {
   return api;
 })();
 // ══════════════════════════════════════════════════════════════════
-//  SOLAPA 3 · CONEXIÓN CON LAS CLASES 15–20 (repo invo.py)
+//  SOLAPA 3 · EL MODELO FORMAL (MILP, PuLP y red de transporte)
 // ══════════════════════════════════════════════════════════════════
-const REPO = 'https://github.com/TadeoSinay/invo.py/blob/main/';
-const CLASES = [
-  { n: 15, tema: 'Intro a optimización · LP por método gráfico · PuLP',
-    donde: '<b>Variables de decisión:</b> cuánto mover, cuándo y por qué ruta. <b>Parámetros:</b> proyección, tarifas y TNA. <b>FO:</b> minimizar costo ocioso + costo de mover. <b>Restricciones:</b> SS ≤ saldo ≤ tope.',
-    q: 'Con dos variables (x₁ = $M por camión, x₂ = $M por avión) para cubrir una necesidad, ¿cómo queda la región factible si el avión tiene franquicia de 3 octopacks?',
-    links: [['Intro optimización', 'optimizacion/teoria/TEO_intro-optimizacion/intro-optimizacion.pdf'], ['Método gráfico', 'optimizacion/teoria/TEO_lp-metodo-grafico/linprog_metodo_grafico.pdf'], ['PuLP', 'optimizacion/practica/PRA_intro_software_optimizacion/pulp-ejemplo-inicial.ipynb']] },
-  { n: 16, tema: 'Casos particulares (gráfico) · Simplex con tablas',
-    donde: '<b>Óptimos múltiples:</b> si dos rutas cuestan lo mismo, hay empate y cualquiera es óptima. En Simplex, cada pivoteo cambia qué remesa entra a la base.',
-    q: 'En el ranking de rutas, ¿qué tarifa habría que tocar para que Brinks y Prosegur empaten en Mar del Plata? ¿Qué le pasa al óptimo?',
-    links: [['Casos particulares', 'optimizacion/teoria/TEO_lp-metodo-grafico-casos-particulares/casos-particulares-metodo-grafico.pdf'], ['Simplex', 'optimizacion/teoria/TEO_lp-simplex-tablas/tablas-simplex.pdf']] },
-  { n: 17, tema: 'Variables ficticias · casos particulares en Simplex',
-    donde: '<b>Saldo ≥ SS</b> es una restricción de “≥”: necesita variable artificial (Big M o dos fases). Si el tope no alcanza para cubrir un día, el problema es <b>no factible</b> y el simulador lo avisa.',
-    q: 'En la solapa 2, poné cobertura P95 y bajá el tope. ¿En qué momento el problema deja de tener solución? ¿Qué restricción lo rompe?',
-    links: [['Variables ficticias', 'optimizacion/teoria/TEO_lp-simplex-variables-ficticias/lp-simplex-variables-ficticias.pdf'], ['Casos particulares Simplex', 'optimizacion/teoria/TEO_lp-simplex-casos-particulares/lp-simplex-casos-particulares.pdf']] },
-  { n: 18, tema: 'Flujo de Mínimo Costo: camino más corto',
-    donde: 'Cada envío es un <b>camino</b> en un grafo: los nodos son el Tesoro, los aeropuertos y las sucursales, y los arcos son tramos con su costo. Un combinado es un camino de 2 arcos. X<sub>ij</sub> = 1 si uso el tramo i→j.',
-    q: 'Armá la matriz nodo-arco del grafo Tesoro → {Salta, Tucumán} → Orán y resolvé con linprog como en la clase.',
-    links: [['FMC camino más corto', 'optimizacion/teoria/TEO_lp-mcf-shortest-path/lp-mcf-shortest-path.pdf'], ['Heurísticas', 'optimizacion/casos/CAS_shortest-path-heuristicas/heuristicas-shortest-path.pdf']] },
-  { n: 19, tema: 'Dijkstra · Transporte',
-    donde: 'La tabla “Todas las rutas posibles” es <b>Dijkstra</b> con el costo como distancia. Con varias sucursales que sobran y varias que faltan, aparece el <b>problema de transporte</b> (abajo).',
-    q: '¿Por qué Dijkstra sirve acá y dejaría de servir si un tramo tuviera costo negativo (un subsidio, por ejemplo)?',
-    links: [['Dijkstra', 'optimizacion/teoria/TEO_shortest-path-dijkstra/shortest-path-dijkstra.pdf'], ['FMC transporte', 'optimizacion/teoria/TEO_lp-mcf-transporte/lp-mcf-transporte.pdf'], ['Ejercicio transporte', 'optimizacion/practica/PRA_ejercicio-transporte/ejercicio-transporte.pdf']] },
-  { n: 20, tema: 'Supply chain · Planificación de la producción · Programación entera',
-    donde: '<b>Saldo(t) = Saldo(t−1) + flujo ± remesa</b> es el balance de stock de planificación. El Tesoro y los aeropuertos son <b>nodos de transbordo</b>. El básico es un <b>costo fijo</b> (x ≤ M·y, como en warehouse location), los octopacks son enteros y qué transportadora contratar es un <b>set cover</b>.',
-    q: '¿Cuál es el mínimo de transportadoras que hay que contratar para cubrir todas las sucursales del mapa? Planteá el set cover.',
-    links: [['Supply chain', 'optimizacion/practica/PRA_ejercicio-supply-chain/ejercicio-supply-chain.pdf'], ['Planificación', 'optimizacion/teoria/TEO_lp-planificacion-produccion/lp-planificacion-produccion.pdf'], ['Entera', 'optimizacion/teoria/TEO_programacion-entera/programacion-entera.pdf']] },
-];
-$('#timeline').innerHTML = CLASES.map(c => `
-  <div class="card tl">
-    <div class="cl">Clase ${c.n}</div>
-    <h4>${c.tema}</h4>
-    <div class="where">${c.donde}</div>
-    <div class="q"><b>Para preguntar:</b> ${c.q}</div>
-    <div>${c.links.map(([t, p]) => `<a href="${REPO + p}" target="_blank" rel="noopener">${t} ↗</a>`).join(' · ')}</div>
-  </div>`).join('');
-
 $('#formulacion').innerHTML = `
   <h3>El modelo completo (MILP) <span class="class-chip">Clase 20</span></h3>
   <div class="math">
     <span class="lbl">Conjuntos y parámetros</span>
-    t = 1…T días · r ∈ rutas (modo × transportadora) · f<sub>t</sub> = flujo neto proyectado al percentil elegido ·
+    t = 1…T días · r ∈ rutas (modo × transportadora, más CIB, otra sucursal y otro banco) · f<sub>t</sub> = flujo neto proyectado al percentil elegido ·
     S<sub>0</sub> saldo de hoy · SS = 1,10 · mín<sub>histórico</sub> · U = tope · i = TNA/365 ·
     b<sub>r</sub> básico · v<sub>r</sub> variable (camión: v·km) · s<sub>r</sub> sobrecargo por octopack · F<sub>r</sub> franquicia · V<sub>o</sub> valor del octopack
     <span class="lbl">Variables</span>
@@ -2229,6 +2366,7 @@ $('#formulacion').innerHTML = `
     x<sub>t,r</sub> ≤ M·y<sub>t,r</sub> &nbsp;<span class="muted small">(costo fijo, como warehouse location)</span><br>
     V<sub>o</sub>·o<sub>t,r</sub> ≥ x<sub>t,r</sub> ; &nbsp; e<sub>t,r</sub> ≥ o<sub>t,r</sub> − F<sub>r</sub> &nbsp;<span class="muted small">(octopacks enteros)</span><br>
     y<sub>t,r</sub> = 0 si la transportadora de r no cubre la sucursal &nbsp;<span class="muted small">(cobertura)</span><br>
+    y<sub>t,CIB</sub> ≤ turno<sub>t</sub> &nbsp;<span class="muted small">(el CIB cuesta $0 pero solo con turno)</span><br>
     Σ<sub>t</sub> y<sub>t,abono</sub> ≤ viajes incluidos &nbsp;<span class="muted small">(abono AMBA)</span>
   </div>
   <p class="small muted">El simulador de la solapa 2 lo resuelve exacto con <b>programación dinámica</b> (cada remesa cubre un tramo de días: es el modelo de lote económico dinámico), que da el mismo óptimo que el MILP para una sucursal. Con muchas sucursales a la vez, se resuelve el MILP con PuLP.</p>`;
@@ -2365,11 +2503,11 @@ const Mcf = (() => {
     S('rect', { x: 0, y: 0, width: 420, height: 470, fill: '#fff' }, svg);
     S('path', { d: polyPath(ARG_POLY.map(([a, b]) => P(a, b))), fill: 'var(--land)', stroke: '#fff' }, svg);
     const maxF = Math.max(1, ...arcs.map(a => a.flow));
-    arcs.filter(a => a.flow > 1e-6).forEach(a => {
+    arcs.filter(a => a.flow > 1e-6).forEach((a, ai) => {
       const p1 = P.node(NODE[a.from]), p2 = P.node(NODE[a.to]);
       const arc = arcPath(p1, p2, 0.15);
       S('path', { d: arc.d, fill: 'none', stroke: '#16324f', 'stroke-width': 1.5 + 7 * a.flow / maxF, opacity: .75, 'marker-end': 'url(#arrow-head-navy)' }, svg);
-      const [mx, my] = quadPoint(p1, arc.c, p2, 0.42);
+      const [mx, my] = quadPoint(p1, arc.c, p2, ai % 2 ? 0.62 : 0.32);
       S('rect', { x: mx - 18, y: my - 8, width: 36, height: 15, rx: 7, fill: '#fff', stroke: '#16324f' }, svg);
       S('text', { x: mx, y: my + 3.5, 'text-anchor': 'middle', 'font-size': 10, 'font-weight': 800, fill: '#16324f', text: nf(a.flow) }, svg);
     });
@@ -2377,7 +2515,8 @@ const Mcf = (() => {
       const [x, y] = P.node(NODE[id]);
       if (id === 'tesoro') S('use', { href: '#ico-vault', x: x - 13, y: y - 13, width: 26, height: 26 }, svg);
       else S('circle', { cx: x, cy: y, r: 9, fill: color, stroke: '#fff', 'stroke-width': 2 }, svg);
-      S('text', { x: x + 13, y: y + 4, 'font-size': 11, 'font-weight': 700, fill: '#1f2430', text: txt }, svg);
+      const right = id === 'mdp';
+      S('text', { x: right ? x - 13 : x + 13, y: y + (right ? 22 : 4), 'text-anchor': right ? 'end' : 'start', 'font-size': 11, 'font-weight': 700, fill: '#1f2430', text: txt }, svg);
     };
     SUP.forEach(s => node(s, '#1b9e6e', `${NODE[s].name} +${nf(st.b[s])}`));
     DEM.forEach(d => node(d, '#c0392b', `${NODE[d].name} −${nf(st.b[d])}`));
@@ -2395,28 +2534,6 @@ const Mcf = (() => {
   setTimeout(refresh);
   return { refresh };
 })();
-
-$('#extras').innerHTML = `
-  <div class="card card-pad stack">
-    <h3>Guion sugerido para la clase</h3>
-    <div class="guion"><ol>
-      <li><b>Bóveda (solapa 1):</b> que un alumno mueva las palancas hasta romper el stock de seguridad. ¿Qué palanca es la única que decidimos nosotros?</li>
-      <li><b>AMBA:</b> prender y apagar el abono. ¿Por qué con abono conviene ir todos los días y sin abono no?</li>
-      <li><b>Provincias:</b> Salta con Brinks (no llega), después Orán (sin aeropuerto) → aparece el combinado con Transp. del Interior. Mirar el ranking: es Dijkstra.</li>
-      <li><b>¿Y si no lo muevo?:</b> la cadena de Markov y el día de equilibrio d* = costo de mover / (monto × TNA/365).</li>
-      <li><b>Proyección (solapa 2):</b> cambiar el percentil de P50 a P95 y discutir el costo de la cobertura. Activar “qué pasó con lo real”.</li>
-      <li><b>Cierre:</b> escribir entre todos el MILP y la red del día (solapa 3).</li>
-    </ol></div>
-  </div>
-  <div class="card card-pad stack">
-    <h3>Puentes con otras unidades de la materia</h3>
-    <ul class="clean small">
-      <li><b>Markov (clases 3–5):</b> la plata parada como estado transitorio y la sucursal destino como estado absorbente. E[días en bóveda] = 1/(1−p).</li>
-      <li><b>Filas de espera (clases 6–8):</b> ventanilla y ATM son servidores. Si la bóveda queda corta, la fila se transforma en clientes sin atender.</li>
-      <li><b>Programación no lineal (clase 21):</b> el pronóstico es una regresión no lineal (Transformer) que se entrena minimizando una pérdida.</li>
-      <li><b>Inventarios (clases 23–24):</b> mover seguido (costo de pedido) contra tener plata parada (costo de mantener) es el mismo trade-off del lote económico (EOQ). El stock de seguridad y el percentil de cobertura son el nivel de servicio.</li>
-    </ul>
-  </div>`;
 </script>
 </body>
 </html>

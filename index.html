@@ -1,0 +1,2422 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bóvedas: del pronóstico a la decisión</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f3f2ee;
+    --surface: #ffffff;
+    --surface-2: #f8f7f3;
+    --ink: #15171c;
+    --ink-2: #454a57;
+    --muted: #6f7482;
+    --line: #e2e0d8;
+    --line-2: #cfccc2;
+    --navy: #16324f;
+    --navy-2: #24507a;
+    --gold: #c99a2e;
+    --money: #2f7d4f;
+    --ok: #1f8a4c;
+    --warn: #b7791f;
+    --bad: #c0392b;
+    --brinks: #2a78d6;
+    --prosegur: #eb6834;
+    --tdi: #1baf7a;
+    --land: #cdc7d1;
+    --land-dark: #a59cab;
+    --radius: 16px;
+    --shadow: 0 1px 2px rgba(20, 24, 35, .06), 0 8px 24px rgba(20, 24, 35, .06);
+    --mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: 'Outfit', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.45;
+    font-size: 16px;
+  }
+  .wrap { max-width: 1440px; margin: 0 auto; padding: 0 20px 60px; }
+  button { font: inherit; cursor: pointer; }
+  select, input { font: inherit; }
+
+  /* ── Header ─────────────────────────────────────────── */
+  .top {
+    display: flex; align-items: center; justify-content: space-between; gap: 18px;
+    padding: 22px 0 14px; flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 14px; }
+  .brand .logo {
+    width: 52px; height: 52px; border-radius: 14px; background: var(--navy);
+    display: grid; place-items: center; flex: none;
+  }
+  .brand h1 { font-size: clamp(1.3rem, 2.4vw, 1.9rem); font-weight: 800; letter-spacing: -.01em; }
+  .brand p { color: var(--ink-2); font-size: .98rem; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px;
+    background: #fff4dc; color: #7a5410; border: 1px solid #f1d9a0; font-size: .85rem; font-weight: 600;
+  }
+
+  /* ── Tabs ───────────────────────────────────────────── */
+  .tabs {
+    position: sticky; top: 0; z-index: 30; display: flex; gap: 6px; padding: 10px 0;
+    background: linear-gradient(var(--bg) 80%, rgba(243,242,238,0));
+    overflow-x: auto;
+  }
+  .tab-btn {
+    border: 1px solid var(--line-2); background: var(--surface); color: var(--ink-2);
+    padding: 10px 18px; border-radius: 999px; font-weight: 600; white-space: nowrap;
+    transition: background .15s, color .15s, border-color .15s;
+  }
+  .tab-btn:hover { border-color: var(--navy-2); color: var(--navy); }
+  .tab-btn[aria-selected="true"] { background: var(--navy); border-color: var(--navy); color: #fff; }
+  .tab-btn .n { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%;
+    background: rgba(255,255,255,.18); margin-right: 8px; font-size: .8rem; }
+  .tab-btn[aria-selected="false"] .n { background: var(--surface-2); border: 1px solid var(--line); }
+  .tab { display: none; }
+  .tab.active { display: block; animation: fade .35s ease both; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+  /* ── Section heads ──────────────────────────────────── */
+  .step-head { display: flex; gap: 14px; align-items: flex-start; margin: 26px 0 12px; }
+  .step-n {
+    flex: none; width: 34px; height: 34px; border-radius: 10px; background: var(--gold); color: #fff;
+    display: grid; place-items: center; font-weight: 800;
+  }
+  .step-head h2 { font-size: 1.35rem; font-weight: 800; line-height: 1.2; }
+  .step-head p { color: var(--ink-2); max-width: 980px; }
+  .class-chip {
+    display: inline-flex; align-items: center; gap: 6px; font-size: .74rem; font-weight: 700; letter-spacing: .02em;
+    padding: 3px 9px; border-radius: 999px; background: #e8eef6; color: var(--navy-2); border: 1px solid #cfdcec;
+    vertical-align: middle; margin-left: 6px; white-space: nowrap;
+  }
+
+  /* ── Cards & grids ──────────────────────────────────── */
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+  .card-pad { padding: 16px 18px; }
+  .card h3 { font-size: 1.08rem; font-weight: 700; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .card .sub { color: var(--muted); font-size: .9rem; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  @media (max-width: 1180px) { .grid-2, .grid-3 { grid-template-columns: minmax(0, 1fr); } .grid-3 > * { grid-column: auto !important; } }
+  @media (max-width: 560px) { .sim-pair { grid-template-columns: minmax(0, 1fr) !important; } }
+  .readout, #sim-compare, #sim-plan, #mcf-out, #sim-route { overflow-x: auto; }
+  select { max-width: 100%; }
+
+  /* ── Vault scene ────────────────────────────────────── */
+  .scene-card { overflow: hidden; }
+  #scene { display: block; width: 100%; height: auto; background: #eef1f4; touch-action: none; user-select: none; }
+  .scene-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding: 12px 16px;
+    border-top: 1px solid var(--line); background: var(--surface-2);
+  }
+  .ctrl { display: inline-flex; align-items: center; gap: 8px; color: var(--ink-2); font-size: .92rem; }
+  .ctrl input[type=range] { width: 130px; accent-color: var(--navy); }
+  .btn {
+    border: 1px solid var(--line-2); background: var(--surface); color: var(--ink); padding: 7px 14px;
+    border-radius: 10px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .btn:hover { border-color: var(--navy-2); }
+  .btn.primary { background: var(--navy); color: #fff; border-color: var(--navy); }
+  .btn.primary:hover { background: var(--navy-2); }
+  .btn.gold { background: var(--gold); color: #fff; border-color: var(--gold); }
+  .seg { display: inline-flex; border: 1px solid var(--line-2); border-radius: 10px; overflow: hidden; background: var(--surface); }
+  .seg button { border: 0; background: transparent; padding: 6px 12px; font-weight: 600; color: var(--ink-2); font-size: .9rem; }
+  .seg button + button { border-left: 1px solid var(--line-2); }
+  .seg button[aria-pressed="true"] { background: var(--navy); color: #fff; }
+  .seg button:disabled { opacity: .4; cursor: not-allowed; }
+
+  /* ── KPIs ───────────────────────────────────────────── */
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+  @media (max-width: 720px) { .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } .wrap { padding: 0 16px 60px; } }
+  .kpi { padding: 12px 14px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); }
+  .kpi .lbl { font-size: .78rem; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  .kpi .val { font-size: 1.45rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .kpi .note { font-size: .8rem; color: var(--ink-2); }
+  .alert { margin-top: 10px; padding: 9px 12px; border-radius: 10px; font-weight: 600; font-size: .92rem; display: block; }
+  .alert.ok { background: #e7f5ec; color: #17633a; border: 1px solid #bfe3cc; }
+  .alert.warn { background: #fff4dc; color: #7a5410; border: 1px solid #f1d9a0; }
+  .alert.bad { background: #fde8e6; color: #8c2318; border: 1px solid #f3c2bc; }
+  .formula {
+    font-family: var(--mono); font-size: .86rem; background: #f4f6fa; border: 1px solid #dfe5ef; color: #1d2b3f;
+    border-radius: 10px; padding: 10px 12px; line-height: 1.7; overflow-x: auto;
+  }
+  .formula b { color: var(--navy-2); }
+  .formula .c { color: #7b8496; }
+
+  /* ── Maps ───────────────────────────────────────────── */
+  .map-wrap { position: relative; }
+  .map-svg { display: block; width: 100%; height: auto; }
+  .map-svg .cell { fill: var(--land); stroke: #fff; stroke-width: 1.2; transition: fill .15s; cursor: pointer; }
+  .map-svg .cell:hover { fill: #b9b0bf; }
+  .map-svg .cell.sel { fill: var(--navy-2); }
+  .map-svg .cell.origin { fill: #8a7f91; }
+  .map-svg .conu { fill: #ddd8e0; }
+  .map-svg .conu:hover { fill: #c9c1ce; }
+  .map-svg .lbl { font-size: 10px; fill: #3e3946; pointer-events: none; font-weight: 600; }
+  .map-svg .lbl.light { fill: #fff; }
+  .map-svg .water-lbl { font-size: 12px; fill: #8aa4bf; font-style: italic; pointer-events: none; }
+  .arc-all { fill: none; stroke: #1b1b1f; stroke-width: 1; stroke-dasharray: 3 3; opacity: .28; }
+  .arc-main { fill: none; stroke: #111; stroke-width: 2.2; stroke-dasharray: 6 5; animation: dash 1.1s linear infinite; }
+  @keyframes dash { to { stroke-dashoffset: -22; } }
+  .node-dot { cursor: pointer; }
+  .map-legend { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: .82rem; color: var(--ink-2); margin-top: 6px; }
+  .map-legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .sw { width: 12px; height: 12px; border-radius: 3px; display: inline-block; }
+
+  .panel-row { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-start; }
+  .lever-box { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .lever-svg { width: 96px; height: 132px; display: block; touch-action: none; }
+  .ctrl-col { display: flex; flex-direction: column; gap: 10px; min-width: 220px; flex: 1; }
+  .ctrl-col label.l { font-size: .8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .readout { margin-top: 12px; }
+  .cost-table { width: 100%; border-collapse: collapse; font-size: .9rem; font-variant-numeric: tabular-nums; }
+  .cost-table th, .cost-table td { padding: 6px 8px; border-bottom: 1px solid var(--line); text-align: left; }
+  .cost-table th { font-size: .74rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+  .cost-table td.num, .cost-table th.num { text-align: right; white-space: nowrap; }
+  .cost-table tr.best td { background: #e9f6ee; font-weight: 700; }
+  .cost-table tr.cur td { outline: 2px solid var(--navy-2); outline-offset: -2px; }
+  .cost-table tr.clickable { cursor: pointer; }
+  .cost-table tr.clickable:hover td { background: #f1f4f9; }
+  .cost-table tr.total td { font-weight: 800; border-top: 2px solid var(--ink); border-bottom: 0; }
+  .muted { color: var(--muted); }
+  .small { font-size: .85rem; }
+  .pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: .78rem; font-weight: 700; }
+  .pill.brinks { background: #e3eefb; color: #1a5aa6; }
+  .pill.prosegur { background: #fdeadf; color: #a8441a; }
+  .pill.tdi { background: #ddf4ea; color: #12704f; }
+  .pill.na { background: #eee; color: #777; }
+  .octos { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+  .octo { width: 16px; height: 13px; border-radius: 3px; background: #7a5a2b; position: relative; }
+  .octo.extra { background: var(--bad); }
+  .octo::after { content: '8'; position: absolute; inset: 0; display: grid; place-items: center; font-size: 8px; color: #fff; font-weight: 800; }
+
+  /* ── Markov ─────────────────────────────────────────── */
+  .markov { margin-top: 16px; border: 2px dashed var(--gold); }
+  .markov[hidden] { display: none; }
+  .scen { padding: 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface-2); }
+  .scen .big { font-size: 1.6rem; font-weight: 800; font-variant-numeric: tabular-nums; }
+  .scen.stay { border-left: 5px solid var(--bad); }
+  .scen.move { border-left: 5px solid var(--ok); }
+  .matrix { border-collapse: collapse; font-family: var(--mono); font-size: .85rem; }
+  .matrix td, .matrix th { padding: 4px 9px; text-align: center; }
+  .matrix th { color: var(--muted); font-weight: 600; font-size: .78rem; }
+  .matrix td { border: 1px solid var(--line); background: #fff; }
+  .matrix td.hi { background: #fff4dc; font-weight: 700; }
+
+  /* ── Tab 2 ──────────────────────────────────────────── */
+  .proy-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(360px, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 1180px) { .proy-grid { grid-template-columns: minmax(0, 1fr); } }
+  #fcst { display: block; width: 100%; height: auto; font-family: 'DejaVu Sans', Verdana, Arial, sans-serif; }
+  .sim-answer { padding: 14px 16px; border-radius: 12px; background: var(--navy); color: #fff; }
+  .sim-answer .k { font-size: .78rem; text-transform: uppercase; letter-spacing: .06em; opacity: .75; font-weight: 700; }
+  .sim-answer .v { font-size: 1.25rem; font-weight: 800; line-height: 1.25; margin-top: 2px; }
+  .sim-answer .d { font-size: .9rem; opacity: .9; margin-top: 4px; }
+  .field { display: grid; grid-template-columns: 1fr auto; gap: 2px 10px; align-items: center; }
+  .field label { font-size: .86rem; color: var(--ink-2); font-weight: 600; }
+  .field output { font-family: var(--mono); font-size: .85rem; color: var(--ink); }
+  .field input[type=range] { grid-column: 1 / -1; width: 100%; accent-color: var(--navy); }
+  .stack { display: flex; flex-direction: column; gap: 12px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .tip {
+    position: fixed; pointer-events: none; z-index: 50; background: #15171c; color: #fff; font-size: .82rem;
+    padding: 7px 10px; border-radius: 8px; box-shadow: 0 6px 20px rgba(0,0,0,.25); opacity: 0; transition: opacity .1s;
+    max-width: 260px; line-height: 1.35;
+  }
+  .redact { fill: #15171c; }
+
+  /* ── Tab 3 ──────────────────────────────────────────── */
+  .timeline { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; }
+  @media (max-width: 1180px) { .timeline { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 640px) { .timeline { grid-template-columns: minmax(0, 1fr); } }
+  .tl { padding: 14px; display: flex; flex-direction: column; gap: 8px; }
+  .tl .cl { font-size: .76rem; font-weight: 800; letter-spacing: .06em; color: var(--gold); text-transform: uppercase; }
+  .tl h4 { font-size: 1rem; line-height: 1.25; }
+  .tl .where { font-size: .88rem; color: var(--ink-2); }
+  .tl .q { font-size: .84rem; background: #f4f6fa; border-radius: 8px; padding: 8px 10px; color: #1d2b3f; }
+  .tl a { font-size: .8rem; color: var(--navy-2); }
+  pre.code {
+    font-family: var(--mono); font-size: .8rem; line-height: 1.55; background: #0f1724; color: #dbe5f3;
+    border-radius: 12px; padding: 14px 16px; overflow-x: auto;
+  }
+  pre.code .k { color: #7cc4fa; } pre.code .s { color: #b5e48c; } pre.code .c { color: #7d8aa3; } pre.code .n { color: #f4b860; }
+  .math { font-family: 'Cambria Math', 'STIX Two Math', 'Times New Roman', serif; font-size: 1.05rem; line-height: 1.9; }
+  .math .lbl { font-family: 'Outfit', sans-serif; font-size: .8rem; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .04em; margin-top: 8px; display: block; }
+  ul.clean { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+  ul.clean li { padding-left: 22px; position: relative; }
+  ul.clean li::before { content: '→'; position: absolute; left: 0; color: var(--gold); font-weight: 800; }
+  .guion { font-size: .9rem; color: var(--ink-2); }
+  .guion ol { padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+  @media (max-width: 900px) { .mcf-grid, .prov-grid { grid-template-columns: 1fr !important; } }
+  footer { margin-top: 40px; color: var(--muted); font-size: .85rem; text-align: center; }
+  :focus-visible { outline: 3px solid #f4b860; outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { .arc-main { animation: none; } .tab.active { animation: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg width="34" height="34" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="#c99a2e" stroke-width="3"/><circle cx="20" cy="20" r="6" fill="none" stroke="#fff" stroke-width="2.5"/><g stroke="#fff" stroke-width="2.5" stroke-linecap="round"><line x1="20" y1="8" x2="20" y2="14"/><line x1="20" y1="26" x2="20" y2="32"/><line x1="8" y1="20" x2="14" y2="20"/><line x1="26" y1="20" x2="32" y2="20"/></g></svg>
+      </div>
+      <div>
+        <h1>Bóvedas: del pronóstico a la decisión</h1>
+        <p>Cuánta plata necesita cada sucursal, cuándo moverla y por dónde · Investigación Operativa, clases 15 a 20</p>
+      </div>
+    </div>
+    <span class="badge">⚠ Montos, tarifas, coberturas y clientes son ficticios (uso didáctico)</span>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Secciones">
+    <button class="tab-btn" role="tab" aria-selected="true" data-tab="tab-logica"><span class="n">1</span>La lógica</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-proy"><span class="n">2</span>La proyección y el simulador</button>
+    <button class="tab-btn" role="tab" aria-selected="false" data-tab="tab-clases"><span class="n">3</span>¿Qué tiene que ver con la materia?</button>
+  </nav>
+
+  <!-- ═══════════════════════ TAB 1 ═══════════════════════ -->
+  <section id="tab-logica" class="tab active" role="tabpanel">
+    <div class="step-head">
+      <span class="step-n">1</span>
+      <div>
+        <h2>La bóveda: entra plata, sale plata <span class="class-chip">Clase 20 · balance de stock</span></h2>
+        <p>Un cliente comercial deposita bolsos por ventanilla; los clientes retiran por caja y por ATM; el camión de caudales trae o se lleva remesas. Mové las <b>palancas</b> (arrastrándolas o con las flechas del teclado) y mirá cómo cambian el saldo, el stock de seguridad y el costo de tener la plata parada.</p>
+      </div>
+    </div>
+    <div class="card scene-card">
+      <svg id="scene" viewBox="0 0 1400 520" role="img" aria-label="Bóveda animada con palancas de depósitos, ventanilla, ATM y camión de caudales"></svg>
+      <div class="scene-bar">
+        <button class="btn primary" id="sim-play">⏸ Pausa</button>
+        <span class="ctrl">Velocidad
+          <span class="seg" id="sim-speed">
+            <button aria-pressed="false" data-v="0.5">½×</button><button aria-pressed="true" data-v="1">1×</button><button aria-pressed="false" data-v="2">2×</button><button aria-pressed="false" data-v="4">4×</button>
+          </span>
+        </span>
+        <button class="btn" id="sim-reset">↺ Reiniciar</button>
+        <span class="ctrl">TNA costo de oportunidad <input type="range" id="tna1" min="5" max="80" step="1"><b id="tna1-out" style="font-variant-numeric:tabular-nums"></b></span>
+        <span class="ctrl muted small">1 día de simulación ≈ 4 s</span>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-top:16px">
+      <div class="card card-pad" style="grid-column: span 2">
+        <div class="kpis" id="vault-kpis"></div>
+        <div id="vault-alert"></div>
+        <div style="margin-top:12px">
+          <svg id="vault-spark" viewBox="0 0 860 170" style="width:100%;height:auto;display:block" role="img" aria-label="Evolución del saldo de la bóveda"></svg>
+        </div>
+      </div>
+      <div class="card card-pad stack">
+        <h3>Las cuentas de la bóveda</h3>
+        <div class="formula">
+          <b>Flujo neto</b> = Depósitos − Retiros<br>
+          <span class="c">  (Retiros = ventanilla + ATM)</span><br>
+          <b>Saldo</b>(t) = Saldo(t−1) + Flujo neto(t) ± Remesa(t)<br>
+          <b>SS</b> = 1,10 × mínimo histórico del saldo<br>
+          <b>Costo ocioso</b>(t) = Saldo(t) × TNA / 365
+        </div>
+        <p class="small">Es la misma ecuación de <b>balance de inventario</b> de planificación de la producción
+          (<span style="font-family:var(--mono)">SF[m] = SF[m−1] + producción − demanda</span>): la bóveda es un depósito y la plata, el producto.</p>
+        <p class="small">El <b>flujo neto</b> es lo que proyecta el modelo (solapa 2). La <b>remesa</b> es lo único que decidimos nosotros: es la variable de decisión.</p>
+      </div>
+    </div>
+
+    <div class="step-head">
+      <span class="step-n">2</span>
+      <div>
+        <h2>¿Cómo se mueve la plata? <span class="class-chip">Clases 18–19 · camino más corto y transporte</span></h2>
+        <p>Moverla tiene costo y dejarla quieta también. En AMBA se viaja por tierra y puede haber <b>abono</b>; hacia las provincias se elige <b>camión, avión o combinado</b> y la transportadora, que no cubre todo el país. Los billetes viajan en <b>octopacks</b>: si la denominación es chica, son más cajas.</p>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card card-pad" id="amba-card"></div>
+      <div class="card card-pad" id="prov-card"></div>
+    </div>
+    <div id="markov-panel" class="card card-pad markov" hidden></div>
+  </section>
+
+  <!-- ═══════════════════════ TAB 2 ═══════════════════════ -->
+  <section id="tab-proy" class="tab" role="tabpanel">
+    <div class="step-head">
+      <span class="step-n">3</span>
+      <div>
+        <h2>La proyección: Sucursal X <span class="class-chip">Regresión no lineal · Transformer cuantílico</span></h2>
+        <p>El modelo proyecta el <b>flujo neto diario</b> (depósitos − retiros) con una banda de cobertura. Arriba está toda la historia; abajo, el zoom de los días proyectados. <b>Los montos están tapados</b> y la serie es ficticia, aunque conserva la forma. Tomamos la curva de abajo como la proyección y, al costado, el simulador decide <b>cuánto mover, cuándo y hacia dónde</b>.</p>
+      </div>
+    </div>
+    <div class="proy-grid">
+      <div class="stack">
+        <div class="card card-pad">
+          <svg id="fcst" viewBox="0 0 1000 700" role="img" aria-label="Gráfico de proyección de Sucursal X con montos ocultos"></svg>
+          <div class="row small muted" style="margin-top:6px;justify-content:space-between">
+            <span>■ = monto tapado (confidencial). Los íconos abajo del zoom son las remesas que propone el simulador.</span>
+            <label class="ctrl"><input type="checkbox" id="show-real-sim"> Mostrar qué pasó con lo real</label>
+          </div>
+        </div>
+        <div class="grid-2" id="model-explain"></div>
+      </div>
+      <div class="card card-pad stack" id="sim-panel"></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════ TAB 3 ═══════════════════════ -->
+  <section id="tab-clases" class="tab" role="tabpanel">
+    <div class="step-head">
+      <span class="step-n">4</span>
+      <div>
+        <h2>¿Qué tiene que ver con la materia?</h2>
+        <p>El problema de las bóvedas recorre de punta a punta el bloque de <b>optimización de las clases 15 a 20</b> del repo <i>invo.py</i>: el pronóstico pone los números y la Investigación Operativa toma la decisión.</p>
+      </div>
+    </div>
+    <div class="timeline" id="timeline"></div>
+    <div class="grid-2" style="margin-top:16px">
+      <div class="card card-pad stack" id="formulacion"></div>
+      <div class="card card-pad stack" id="pulp"></div>
+    </div>
+    <div class="card card-pad" style="margin-top:16px" id="mcf-card"></div>
+    <div class="grid-2" style="margin-top:16px" id="extras"></div>
+  </section>
+
+  <footer>Material didáctico · Todos los montos, tarifas, coberturas y clientes son ficticios. Los nombres de transportadoras se usan solo como ejemplo, con tarifas inventadas.</footer>
+</div>
+<div class="tip" id="tip"></div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-steel" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#b9c2cc"/><stop offset=".55" stop-color="#8e99a6"/><stop offset="1" stop-color="#6c7784"/></linearGradient>
+    <linearGradient id="g-steel-v" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#a7b1bc"/><stop offset="1" stop-color="#76818e"/></linearGradient>
+    <linearGradient id="g-door" x1="0" x2="1"><stop offset="0" stop-color="#6d7885"/><stop offset=".45" stop-color="#c3cbd4"/><stop offset="1" stop-color="#7d8894"/></linearGradient>
+    <linearGradient id="g-glass" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#dff0fb"/><stop offset="1" stop-color="#b9d9ee"/></linearGradient>
+    <pattern id="hatch" width="7" height="7" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" stroke="#c0392b" stroke-width="1.4" opacity=".35"/></pattern>
+    <marker id="arrow-head" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#111"/></marker>
+    <marker id="arrow-head-navy" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="userSpaceOnUse" markerWidth="14" markerHeight="14" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#24507a"/></marker>
+    <!-- iconos (las "fotos" de los nodos) -->
+    <symbol id="ico-vault" viewBox="0 0 64 64"><rect x="4" y="6" width="56" height="52" rx="6" fill="#8e99a6"/><circle cx="32" cy="32" r="20" fill="#5d6875"/><circle cx="32" cy="32" r="15" fill="#c3cbd4"/><circle cx="32" cy="32" r="4" fill="#5d6875"/><g stroke="#5d6875" stroke-width="3" stroke-linecap="round"><line x1="32" y1="19" x2="32" y2="27"/><line x1="32" y1="37" x2="32" y2="45"/><line x1="19" y1="32" x2="27" y2="32"/><line x1="37" y1="32" x2="45" y2="32"/></g></symbol>
+    <symbol id="ico-truck" viewBox="0 0 64 64"><rect x="4" y="16" width="36" height="28" rx="3" fill="#2f3b4a"/><rect x="8" y="22" width="12" height="8" fill="#c99a2e"/><path d="M40 24h11l8 10v10H40z" fill="#3e4c5e"/><rect x="44" y="27" width="8" height="7" fill="#bfe0f5"/><circle cx="16" cy="46" r="6" fill="#111"/><circle cx="48" cy="46" r="6" fill="#111"/><circle cx="16" cy="46" r="2.4" fill="#999"/><circle cx="48" cy="46" r="2.4" fill="#999"/></symbol>
+    <symbol id="ico-plane" viewBox="0 0 64 64"><path d="M30 6c2-2 6-2 6 2v18l20 11v6l-20-6v12l6 5v4l-9-3-9 3v-4l6-5V37L10 43v-6l20-11V8c0-1 0-1 0-2z" fill="#2f3b4a"/></symbol>
+    <symbol id="ico-bank" viewBox="0 0 64 64"><path d="M32 6 6 20h52z" fill="#16324f"/><rect x="8" y="22" width="48" height="4" fill="#16324f"/><g fill="#24507a"><rect x="12" y="28" width="6" height="20"/><rect x="24" y="28" width="6" height="20"/><rect x="36" y="28" width="6" height="20"/><rect x="46" y="28" width="6" height="20"/></g><rect x="6" y="50" width="52" height="7" fill="#16324f"/></symbol>
+    <symbol id="ico-atm" viewBox="0 0 64 64"><rect x="14" y="4" width="36" height="56" rx="4" fill="#2f3b4a"/><rect x="19" y="10" width="26" height="16" rx="2" fill="#7fd1a8"/><rect x="22" y="31" width="20" height="3" fill="#111"/><g fill="#c3cbd4"><rect x="20" y="38" width="6" height="4"/><rect x="29" y="38" width="6" height="4"/><rect x="38" y="38" width="6" height="4"/><rect x="20" y="45" width="6" height="4"/><rect x="29" y="45" width="6" height="4"/><rect x="38" y="45" width="6" height="4"/></g></symbol>
+    <symbol id="ico-bag" viewBox="0 0 40 44"><path d="M14 6h12l-3 7c8 3 14 11 14 19 0 7-6 10-17 10S3 39 3 32c0-8 6-16 14-19z" fill="#b08d57" stroke="#7b5f34" stroke-width="2"/><path d="M13 6h14" stroke="#7b5f34" stroke-width="3" stroke-linecap="round"/><text x="20" y="35" text-anchor="middle" font-size="15" font-weight="800" fill="#4c3a1d" font-family="Arial">$</text></symbol>
+    <symbol id="ico-bill" viewBox="0 0 30 16"><rect x="0.5" y="0.5" width="29" height="15" rx="2" fill="#3f9a62" stroke="#24603c"/><circle cx="15" cy="8" r="4" fill="none" stroke="#c9eed6" stroke-width="1.5"/></symbol>
+    <symbol id="ico-octo" viewBox="0 0 30 24"><rect x="1" y="3" width="28" height="20" rx="2" fill="#7a5a2b" stroke="#4e3a1b"/><rect x="1" y="3" width="28" height="5" fill="#946d35"/><text x="15" y="20" text-anchor="middle" font-size="11" font-weight="800" fill="#fff" font-family="Arial">8</text></symbol>
+  </defs>
+</svg>
+<script>
+"use strict";
+const DATA = {
+  trainStart:"2025-09-08", trainEnd:"2026-09-15", valStart:"2026-09-16", valEnd:"2026-10-06",
+  trainReal:[57.1,61.1,54.0,47.3,52.2,46.7,132.2,78.4,52.5,51.2,65.8,64.0,60.7,48.5,59.2,70.0,44.8,54.5,39.8,45.6,40.7,58.1,46.4,65.2,63.7,59.5,116.0,55.3,62.0,64.5,45.7,57.9,52.1,54.4,82.5,55.5,66.2,81.4,59.2,66.0,70.3,70.0,52.9,70.8,148.5,50.5,86.2,73.6,62.5,112.3,86.3,102.3,185.9,83.5,70.7,86.2,169.8,86.4,102.6,64.6,78.9,68.3,77.9,58.5,67.0,73.4,93.6,101.9,57.7,64.9,89.8,50.2,70.2,76.0,8.1,156.9,72.0,71.3,113.4,206.2,70.1,174.1,83.2,120.1,218.4,60.0,76.4,69.4,98.9,88.3,75.9,88.3,192.9,95.9,75.9,86.0,56.9,198.7,52.0,48.1,70.0,61.3,77.4,122.2,62.0,64.6,77.4,82.4,71.0,70.4,85.6,82.1,145.9,71.7,73.5,57.4,103.8,188.7,88.8,8.7,72.1,127.8,68.4,45.1,54.3,74.7,43.0,82.5,46.5,80.3,55.8,79.5,119.6,47.4,87.2,90.2,64.7,134.4,63.3,52.8,83.1,79.3,144.2,54.7,56.7,49.0,85.5,62.6,80.1,64.9,55.4,60.0,56.9,64.5,59.2,60.0,47.3,110.7,91.2,54.1,48.3,10.9,81.3,42.9,55.8,49.2,38.0,65.0,54.4,54.9,44.2,57.0,45.2,48.8,38.9,37.0,64.6,42.9,51.0,47.4,42.9,42.2,54.0,43.8,45.2,46.5,59.8,53.4,49.9,40.4,33.4,55.6,55.6,43.5,50.4,52.6,53.0,53.9,39.6,61.0,32.9,52.5,48.7,53.1,66.6,61.9,34.9,31.1,54.2,36.4,116.5,55.7,32.4,6.0,49.6,48.0,45.2,48.3,39.8,145.5,264.5,39.7,34.3,105.0,48.8,54.4,40.1,124.4,40.1,41.2,52.5,42.4,54.6,54.5,79.1,37.5,62.0,50.1,51.0,37.2,46.5,60.7,50.7,52.7,48.6,66.3,51.0,172.1,43.6,32.8,73.8,44.2,66.3,49.7,37.9,39.3,61.7,49.6,48.2,46.9,47.2,55.6,52.3,48.3,36.5,50.6,38.7],
+  trainPred:[null,null,null,null,null,null,null,null,null,null,null,null,null,null,112.3,91.2,89.5,86.5,86.0,71.0,71.1,67.9,80.0,69.5,79.1,88.3,75.4,74.1,101.2,79.4,74.4,85.0,98.0,80.0,80.6,75.3,85.3,74.3,75.4,93.7,77.5,92.9,96.9,86.7,89.2,101.9,84.2,81.4,76.2,86.6,98.8,94.3,79.5,107.3,82.7,88.8,84.9,88.2,88.8,84.2,86.2,88.1,115.0,90.5,102.4,91.2,86.9,74.3,89.6,72.6,76.2,93.5,92.4,85.7,74.5,84.4,82.2,92.7,107.4,89.5,82.1,79.4,87.8,87.0,79.8,89.8,80.2,98.4,98.1,98.4,85.9,94.0,124.6,86.9,87.0,79.0,77.8,94.8,86.5,136.7,95.1,74.1,80.4,87.4,88.9,82.1,92.9,121.1,75.4,77.1,89.2,86.2,69.5,92.7,86.4,91.5,78.1,78.5,72.6,100.6,78.1,91.2,110.7,79.8,67.4,75.0,84.5,68.9,84.6,79.0,69.1,72.3,72.3,74.8,71.4,69.0,72.3,67.7,66.0,73.8,80.1,64.4,73.9,69.6,67.5,79.4,70.1,84.0,68.4,75.9,71.7,68.3,77.0,72.0,77.0,72.5,65.9,72.0,72.7,78.5,65.4,70.3,60.2,74.1,63.1,58.2,67.8,74.9,58.8,60.9,61.8,59.4,67.7,60.5,60.6,67.1,59.2,65.5,57.4,55.8,52.2,72.6,59.4,62.3,60.5,60.9,60.1,70.8,54.1,51.4,53.4,51.7,62.1,62.2,52.8,50.2,54.9,64.0,43.6,58.7,50.3,60.7,50.1,53.8,48.1,50.3,62.2,59.0,52.8,50.6,46.0,52.6,54.3,54.0,53.9,48.9,53.8,53.8,60.6,63.8,53.1,50.1,53.3,50.7,50.1,53.1,112.4,56.2,52.7,54.3,52.1,49.6,48.5,51.7,50.2,53.7,52.5,46.4,52.7,46.4,49.4,50.8,43.2,52.4,52.7,50.9,49.6,49.6,46.9,49.8,48.2,50.9,45.2,51.3,50.7,85.6,47.6,51.9,42.4,51.2,49.8,49.8,50.1,45.5,47.0,50.5,49.5],
+  valReal:[103.4,47.6,30.9,44.4,55.6,46.3,38.9,32.3,57.1,35.4,42.7,50.3,27.2,48.9,39.3],
+  valPred:[55.4,54.9,46.3,53.0,42.9,48.5,46.0,61.4,50.0,36.2,36.8,43.4,44.6,43.3,33.8],
+  valHi:[104.8,103.4,96.3,97.0,95.7,90.5,86.5,89.6,88.6,73.7,64.8,73.3,83.1,79.8,61.4],
+  valLo:[21.3,23.3,20.2,19.1,19.0,20.0,15.4,16.4,18.6,13.9,12.6,12.7,15.8,13.7,8.6],
+  naive:47.2
+};
+// ══════════════════════════════════════════════════════════════════
+//  NÚCLEO: utilidades, estado global, geografía y motor de costos
+//  (todo ficticio: tarifas, coberturas, montos y clientes)
+// ══════════════════════════════════════════════════════════════════
+const NS = 'http://www.w3.org/2000/svg';
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+
+function S(tag, attrs = {}, parent) {
+  const el = document.createElementNS(NS, tag);
+  for (const k in attrs) {
+    if (k === 'text') el.textContent = attrs[k];
+    else if (attrs[k] !== undefined && attrs[k] !== null) el.setAttribute(k, attrs[k]);
+  }
+  if (parent) parent.appendChild(el);
+  return el;
+}
+function H(tag, attrs = {}, parent) {
+  const el = document.createElement(tag);
+  for (const k in attrs) {
+    if (k === 'html') el.innerHTML = attrs[k];
+    else if (k === 'text') el.textContent = attrs[k];
+    else if (k === 'class') el.className = attrs[k];
+    else el.setAttribute(k, attrs[k]);
+  }
+  if (parent) parent.appendChild(el);
+  return el;
+}
+const nf = (v, d = 0) => (Math.abs(v) < 0.5 * 10 ** -d ? 0 : v).toLocaleString('es-AR', { minimumFractionDigits: d, maximumFractionDigits: d });
+// Montos en $M (millones de pesos ficticios). Debajo de 1 M se muestran en miles.
+function fmtM(v, opts = {}) {
+  if (!isFinite(v)) return '—';
+  if (Math.abs(v) < 5e-4) return '$0';
+  const s = v < 0 ? '−' : '';
+  const a = Math.abs(v);
+  if (a < 1 && !opts.forceM) return `${s}$${nf(Math.round(a * 1000))} mil`;
+  const d = opts.d ?? (a < 10 ? 2 : a < 100 ? 1 : 0);
+  return `${s}$${nf(a, d)} M`;
+}
+const pct = v => `${nf(v * 100, v < 0.1 ? 1 : 0)}%`;
+
+// ── Estado compartido entre solapas ────────────────────────────────
+const G = {
+  tna: 0.32,          // tasa nominal anual de costo de oportunidad
+  denom: 20000,       // denominación del billete ($)
+  listeners: [],
+  on(fn) { this.listeners.push(fn); },
+  emit() { this.listeners.forEach(fn => fn()); },
+  get iDay() { return this.tna / 365; },
+};
+const BILLETES_POR_OCTOPACK = 8 * 1000;                 // 8 ladrillos × 1.000 billetes
+const octoValue = () => BILLETES_POR_OCTOPACK * G.denom / 1e6;   // $M por octopack
+const octopacks = M => (M > 1e-9 ? Math.ceil(M / octoValue() - 1e-9) : 0);
+
+// ── Geografía ──────────────────────────────────────────────────────
+function haversine(a, b) {
+  const R = 6371, r = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * r, dLon = (b.lon - a.lon) * r;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLon / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(h));
+}
+
+const TESORO = { id: 'tesoro', name: 'Tesoro Central', prov: 'CABA', lat: -34.604, lon: -58.372, region: 'amba', airport: true };
+
+const PROV_NODES = [
+  { id: 'rosario', name: 'Rosario', prov: 'Santa Fe', lat: -32.95, lon: -60.65, region: 'centro', airport: true },
+  { id: 'rafaela', name: 'Rafaela', prov: 'Santa Fe', lat: -31.25, lon: -61.49, region: 'centro', airport: false },
+  { id: 'cordoba', name: 'Córdoba', prov: 'Córdoba', lat: -31.42, lon: -64.18, region: 'centro', airport: true },
+  { id: 'vmaria', name: 'Villa María', prov: 'Córdoba', lat: -32.41, lon: -63.24, region: 'centro', airport: false },
+  { id: 'mendoza', name: 'Mendoza', prov: 'Mendoza', lat: -32.89, lon: -68.84, region: 'cuyo', airport: true },
+  { id: 'mdp', name: 'Mar del Plata', prov: 'Buenos Aires', lat: -38.0, lon: -57.56, region: 'pba', airport: true },
+  { id: 'tandil', name: 'Tandil', prov: 'Buenos Aires', lat: -37.32, lon: -59.13, region: 'pba', airport: false },
+  { id: 'bahia', name: 'Bahía Blanca', prov: 'Buenos Aires', lat: -38.72, lon: -62.27, region: 'pba', airport: true },
+  { id: 'neuquen', name: 'Neuquén', prov: 'Neuquén', lat: -38.95, lon: -68.06, region: 'patagonia', airport: true },
+  { id: 'comodoro', name: 'Comodoro Rivadavia', prov: 'Chubut', lat: -45.86, lon: -67.48, region: 'patagonia', airport: true },
+  { id: 'gallegos', name: 'Río Gallegos', prov: 'Santa Cruz', lat: -51.62, lon: -69.22, region: 'patagonia', airport: true },
+  { id: 'tucuman', name: 'Tucumán', prov: 'Tucumán', lat: -26.82, lon: -65.22, region: 'noa', airport: true },
+  { id: 'sgo', name: 'Santiago del Estero', prov: 'Santiago del Estero', lat: -27.78, lon: -64.26, region: 'noa', airport: true },
+  { id: 'salta', name: 'Salta', prov: 'Salta', lat: -24.79, lon: -65.41, region: 'noa', airport: true },
+  { id: 'jujuy', name: 'Jujuy', prov: 'Jujuy', lat: -24.19, lon: -65.30, region: 'noa', airport: true },
+  { id: 'oran', name: 'Orán', prov: 'Salta', lat: -23.13, lon: -64.33, region: 'noa', airport: false },
+  { id: 'resistencia', name: 'Resistencia', prov: 'Chaco', lat: -27.45, lon: -58.99, region: 'nea', airport: true },
+  { id: 'goya', name: 'Goya', prov: 'Corrientes', lat: -29.14, lon: -59.26, region: 'nea', airport: false },
+  { id: 'posadas', name: 'Posadas', prov: 'Misiones', lat: -27.37, lon: -55.90, region: 'nea', airport: true },
+];
+
+// Comunas de CABA (centroides aproximados) y partidos del conurbano
+const COMUNAS = [
+  [1, 'Microcentro · Retiro', -58.372, -34.606], [2, 'Recoleta', -58.395, -34.588], [3, 'Balvanera', -58.405, -34.612],
+  [4, 'La Boca · Barracas', -58.385, -34.645], [5, 'Almagro · Boedo', -58.421, -34.613], [6, 'Caballito', -58.443, -34.618],
+  [7, 'Flores', -58.452, -34.637], [8, 'Lugano · Soldati', -58.466, -34.672], [9, 'Mataderos · Liniers', -58.505, -34.651],
+  [10, 'Floresta · V. Luro', -58.497, -34.627], [11, 'Devoto · V. del Parque', -58.493, -34.604], [12, 'Saavedra · Urquiza', -58.49, -34.567],
+  [13, 'Belgrano · Núñez', -58.457, -34.561], [14, 'Palermo', -58.42, -34.578], [15, 'Chacarita · V. Crespo', -58.455, -34.592],
+].map(([n, name, lon, lat]) => ({ id: 'c' + n, num: n, name: `Comuna ${n}`, barrio: name, lon, lat, region: 'amba', kind: 'comuna' }));
+
+const PARTIDOS = [
+  ['Tigre', -58.585, -34.435], ['San Isidro', -58.53, -34.48], ['Vicente López', -58.495, -34.522], ['San Martín', -58.56, -34.57],
+  ['Tres de Febrero', -58.575, -34.61], ['Morón', -58.625, -34.655], ['Merlo', -58.685, -34.665], ['La Matanza', -58.58, -34.74],
+  ['Esteban Echeverría', -58.49, -34.78], ['Lomas de Zamora', -58.42, -34.77], ['Lanús', -58.39, -34.705], ['Avellaneda', -58.335, -34.672],
+  ['Quilmes', -58.265, -34.745],
+].map(([name, lon, lat], i) => ({ id: 'p' + i, name, barrio: 'Conurbano', lon, lat, region: 'amba', kind: 'partido' }));
+
+const AMBA_NODES = [...COMUNAS, ...PARTIDOS];
+const ALL_NODES = [TESORO, ...PROV_NODES, ...AMBA_NODES];
+const NODE = Object.fromEntries(ALL_NODES.map(n => [n.id, n]));
+
+// ── Transportadoras (tarifas inventadas) ───────────────────────────
+// terrestre: básico + monto × v × km        (v en $ por cada $1 por km)
+// aéreo:     básico + v × monto + sobrecargo × (octopacks − franquicia)⁺
+// abono AMBA: cuota mensual / viajes incluidos → costo imputado por viaje
+const TDI_SET = new Set(['tucuman', 'sgo', 'salta', 'jujuy', 'oran']);
+const CARRIERS = {
+  brinks: {
+    id: 'brinks', name: 'Brinks', cls: 'brinks', color: '#2a78d6',
+    terr: { b: 0.30, v: 2.0e-5 }, air: { b: 1.90, v: 0.0010, fr: 3, s: 0.35 }, abono: { m: 8.0, n: 40 },
+    covers: n => !['noa', 'nea'].includes(n.region),
+    blurb: 'La más barata. Cubre todo AMBA, centro, Cuyo y sur. No llega al norte.',
+  },
+  prosegur: {
+    id: 'prosegur', name: 'Prosegur', cls: 'prosegur', color: '#eb6834',
+    terr: { b: 0.38, v: 2.4e-5 }, air: { b: 2.40, v: 0.0012, fr: 3, s: 0.42 }, abono: { m: 7.5, n: 30 },
+    covers: () => true,
+    blurb: 'Cubre todo el país, pero es más cara.',
+  },
+  tdi: {
+    id: 'tdi', name: 'Transp. del Interior', cls: 'tdi', color: '#1baf7a',
+    terr: { b: 0.22, v: 1.6e-5 }, air: null, abono: null,
+    covers: n => TDI_SET.has(n.id),
+    blurb: 'Regional y barata, solo por tierra y solo en parte del NOA (Tucumán, Santiago, Salta, Jujuy, Orán).',
+  },
+};
+const CARRIER_LIST = Object.values(CARRIERS);
+const VEL_KM_DIA = 550;   // camión de caudales: km por día de tránsito
+
+function legTerr(c, from, to, M) {
+  const km = haversine(from, to);
+  const variable = M * c.terr.v * km;
+  return { kind: 'terr', carrier: c, from, to, km, basico: c.terr.b, variable, sobre: 0, total: c.terr.b + variable,
+           days: from.region === 'amba' && to.region === 'amba' ? 0 : Math.max(1, Math.ceil(km / VEL_KM_DIA)) };
+}
+function legAir(c, from, to, M) {
+  const oc = octopacks(M), extra = Math.max(0, oc - c.air.fr);
+  const variable = c.air.v * M, sobre = extra * c.air.s;
+  return { kind: 'air', carrier: c, from, to, km: haversine(from, to), basico: c.air.b, variable, octos: oc, extra, sobre,
+           total: c.air.b + variable + sobre, days: 1 };
+}
+function legAbono(c, from, to) {
+  return { kind: 'abono', carrier: c, from, to, km: haversine(from, to), basico: 0, variable: 0, sobre: 0,
+           imputado: c.abono.m / c.abono.n, total: c.abono.m / c.abono.n, days: 0 };
+}
+const legDesc = l => (l.kind === 'air' ? '✈ ' : '🚚 ') + l.carrier.name + (l.kind === 'abono' ? ' (abono)' : '');
+
+// Construye el grafo multimodal origen → (aeropuertos) → destino para un monto M.
+// Sirve en los dos sentidos: Tesoro → sucursal (abastecer) o sucursal → Tesoro (evacuar).
+//   directo:  camión, o avión si ambos extremos tienen aeropuerto
+//   combinado: avión hasta un aeropuerto cercano al destino + camión,
+//              o camión hasta un aeropuerto cercano al origen + avión
+function buildGraph(origin, dest, M, amba) {
+  const arcs = [];
+  const add = (u, v, leg) => arcs.push({ u, v, leg, w: leg.total });
+  if (amba) {
+    for (const c of [CARRIERS.brinks, CARRIERS.prosegur]) {
+      const useAbono = amba.abono[c.id] && amba.usados[c.id] < c.abono.n;
+      add('O', 'D', useAbono ? legAbono(c, origin, dest) : legTerr(c, origin, dest, M));
+    }
+    return arcs;
+  }
+  const airOk = (c, a, b) => c.air && a.airport && b.airport && c.covers(a) && c.covers(b);
+  const terrOk = (c, a, b) => c.covers(a) && c.covers(b);
+  const near = n => PROV_NODES.filter(h => h.airport && h.id !== n.id && h.id !== origin.id && h.id !== dest.id && haversine(h, n) < 450);
+  for (const c of CARRIER_LIST) {
+    if (terrOk(c, origin, dest)) add('O', 'D', legTerr(c, origin, dest, M));
+    if (airOk(c, origin, dest)) add('O', 'D', legAir(c, origin, dest, M));
+  }
+  for (const h of near(dest)) {
+    for (const ca of CARRIER_LIST) if (airOk(ca, origin, h)) add('O', 'HA:' + h.id, legAir(ca, origin, h, M));
+    for (const ct of CARRIER_LIST) if (terrOk(ct, h, dest)) add('HA:' + h.id, 'D', legTerr(ct, h, dest, M));
+  }
+  if (origin.region !== 'amba') for (const h of near(origin)) {
+    for (const ct of CARRIER_LIST) if (terrOk(ct, origin, h)) add('O', 'HT:' + h.id, legTerr(ct, origin, h, M));
+    for (const ca of CARRIER_LIST) if (airOk(ca, h, dest)) add('HT:' + h.id, 'D', legAir(ca, h, dest, M));
+  }
+  return arcs;
+}
+
+function dijkstra(arcs, s, t) {
+  const dist = { [s]: 0 }, prev = {}, done = new Set();
+  const nodes = new Set(arcs.flatMap(a => [a.u, a.v]));
+  nodes.add(s);
+  while (true) {
+    let u = null;
+    for (const n of nodes) if (!done.has(n) && dist[n] !== undefined && (u === null || dist[n] < dist[u])) u = n;
+    if (u === null || u === t) break;
+    done.add(u);
+    for (const a of arcs) if (a.u === u) {
+      const nd = dist[u] + a.w;
+      if (dist[a.v] === undefined || nd < dist[a.v] - 1e-12) { dist[a.v] = nd; prev[a.v] = a; }
+    }
+  }
+  if (dist[t] === undefined) return null;
+  const legs = [];
+  for (let v = t; v !== s; v = prev[v].u) legs.unshift(prev[v].leg);
+  return { total: dist[t], legs, labels: dist };
+}
+
+function enumeratePaths(arcs) {
+  const out = [];
+  for (const a of arcs) {
+    if (a.u === 'O' && a.v === 'D') out.push([a.leg]);
+    if (a.u === 'O' && a.v.startsWith('H')) for (const b of arcs) if (b.u === a.v && b.v === 'D') out.push([a.leg, b.leg]);
+  }
+  return out.map(legs => ({ legs, total: legs.reduce((s, l) => s + l.total, 0), mode: modeOf(legs), days: legs.reduce((s, l) => s + l.days, 0) }))
+            .sort((x, y) => x.total - y.total);
+}
+function modeOf(legs) {
+  if (legs.length === 2) return legs[0].kind === legs[1].kind ? (legs[0].kind === 'air' ? 'aereo' : 'terrestre') : 'combinado';
+  return legs[0].kind === 'air' ? 'aereo' : 'terrestre';
+}
+const MODE_LABEL = { terrestre: 'Terrestre', aereo: 'Aéreo', combinado: 'Combinado' };
+
+// Mejor ruta (costo mínimo) para mover M desde origin a dest.
+function bestRoute(origin, dest, M, amba) {
+  if (origin.id === dest.id) return { total: 0, legs: [], mode: 'nada', days: 0 };
+  const arcs = buildGraph(origin, dest, M, amba);
+  const r = dijkstra(arcs, 'O', 'D');
+  if (!r) return null;
+  return { ...r, mode: modeOf(r.legs), days: r.legs.reduce((s, l) => s + l.days, 0) };
+}
+
+// ── Componente palanca (SVG) ───────────────────────────────────────
+// Dibuja una palanca dentro de <g>. Arrastrable con mouse/touch y con flechas.
+function makeLever(parent, o) {
+  const A = o.binary ? 38 : 55;            // ángulo máximo
+  const g = S('g', { class: 'lever', transform: `translate(${o.x || 0},${o.y || 0})`, tabindex: 0, role: 'slider',
+    'aria-label': o.label, 'aria-valuemin': o.min, 'aria-valuemax': o.max, style: 'cursor:grab;outline:none' }, parent);
+  S('text', { x: 0, y: 10, 'text-anchor': 'middle', 'font-size': 12.5, 'font-weight': 700, fill: '#1f2430', text: o.label }, g);
+  if (o.sub) S('text', { x: 0, y: 24, 'text-anchor': 'middle', 'font-size': 10.5, fill: '#6f7482', text: o.sub }, g);
+  const R = 66, py = 104;
+  const pt = a => [Math.sin(a * Math.PI / 180) * R, py - Math.cos(a * Math.PI / 180) * R];
+  const [x0, y0] = pt(-A), [x1, y1] = pt(A);
+  S('path', { d: `M${x0},${y0} A${R},${R} 0 0 1 ${x1},${y1}`, fill: 'none', stroke: '#cfd5dd', 'stroke-width': 8, 'stroke-linecap': 'round' }, g);
+  const prog = S('path', { fill: 'none', stroke: o.color || '#24507a', 'stroke-width': 8, 'stroke-linecap': 'round', opacity: .85 }, g);
+  if (o.bipolar || o.binary) {
+    const [cx, cy] = pt(0);
+    S('line', { x1: cx, y1: cy - 6, x2: cx, y2: cy + 6, stroke: '#8a93a0', 'stroke-width': 2 }, g);
+  }
+  if (o.ends) {
+    S('text', { x: x0 - 4, y: y0 + 16, 'text-anchor': 'middle', 'font-size': 10, fill: '#6f7482', text: o.ends[0] }, g);
+    S('text', { x: x1 + 4, y: y1 + 16, 'text-anchor': 'middle', 'font-size': 10, fill: '#6f7482', text: o.ends[1] }, g);
+  }
+  const rod = S('g', {}, g);
+  S('line', { x1: 0, y1: py, x2: 0, y2: py - 58, stroke: '#4b5563', 'stroke-width': 6, 'stroke-linecap': 'round' }, rod);
+  S('circle', { cx: 0, cy: py - 62, r: 12, fill: o.knob || '#c0392b', stroke: '#7f1d1d', 'stroke-width': 2 }, rod);
+  S('circle', { cx: -3.5, cy: py - 66, r: 3.5, fill: '#fff', opacity: .55 }, rod);
+  S('rect', { x: -26, y: py - 4, width: 52, height: 16, rx: 6, fill: '#2f3b4a' }, g);
+  S('circle', { cx: 0, cy: py + 2, r: 5, fill: '#9aa3ae' }, g);
+  const valText = S('text', { x: 0, y: py + 32, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 800, fill: '#15171c' }, g);
+  // zona de agarre generosa
+  S('rect', { x: -70, y: 22, width: 140, height: py - 4, fill: 'transparent' }, g);
+
+  const lev = { value: o.value, g };
+  const toAngle = v => o.binary ? (v ? A : -A) : lerp(-A, A, (v - o.min) / (o.max - o.min));
+  function render() {
+    const a = toAngle(lev.value);
+    rod.setAttribute('transform', `rotate(${a},0,${py})`);
+    const a0 = (o.bipolar || o.binary) ? 0 : -A;
+    if (Math.abs(a - a0) < 0.5) prog.setAttribute('d', '');
+    else {
+      const [sx, sy] = pt(Math.min(a0, a)), [ex, ey] = pt(Math.max(a0, a));
+      prog.setAttribute('d', `M${sx},${sy} A${R},${R} 0 0 1 ${ex},${ey}`);
+    }
+    valText.textContent = o.fmt ? o.fmt(lev.value) : lev.value;
+    g.setAttribute('aria-valuenow', lev.value);
+    g.setAttribute('aria-valuetext', valText.textContent);
+  }
+  lev.set = (v, silent) => {
+    v = o.binary ? (v ? 1 : 0) : clamp(Math.round(v / (o.step || 1)) * (o.step || 1), o.min, o.max);
+    if (v === lev.value && !silent) { render(); return; }
+    lev.value = v; render();
+    if (!silent && o.onChange) o.onChange(v);
+  };
+  function fromEvent(e) {
+    const m = g.getScreenCTM().inverse();
+    const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(m);
+    const a = clamp(Math.atan2(p.x, py - p.y) * 180 / Math.PI, -A, A);
+    lev.set(o.binary ? (a >= 0 ? 1 : 0) : lerp(o.min, o.max, (a + A) / (2 * A)));
+  }
+  let drag = false, moved = false;
+  g.addEventListener('pointerdown', e => { drag = true; moved = false; g.setPointerCapture(e.pointerId); g.style.cursor = 'grabbing'; if (!o.binary) fromEvent(e); e.preventDefault(); });
+  g.addEventListener('pointermove', e => { if (drag && !o.binary) { moved = true; fromEvent(e); } else if (drag && o.binary) { moved = true; fromEvent(e); } });
+  g.addEventListener('pointerup', e => { if (drag && o.binary && !moved) lev.set(lev.value ? 0 : 1); drag = false; g.style.cursor = 'grab'; });
+  g.addEventListener('keydown', e => {
+    const st = o.binary ? 1 : (o.kstep || (o.max - o.min) / 20);
+    if (['ArrowRight', 'ArrowUp'].includes(e.key)) { lev.set(o.binary ? 1 : lev.value + st); e.preventDefault(); }
+    if (['ArrowLeft', 'ArrowDown'].includes(e.key)) { lev.set(o.binary ? 0 : lev.value - st); e.preventDefault(); }
+    if ((e.key === ' ' || e.key === 'Enter') && o.binary) { lev.set(lev.value ? 0 : 1); e.preventDefault(); }
+  });
+  render();
+  return lev;
+}
+// Palanca suelta para paneles HTML
+function leverBox(container, o) {
+  const box = H('div', { class: 'lever-box' }, container);
+  const svg = S('svg', { class: 'lever-svg', viewBox: '-62 -2 124 146' }, box);
+  return makeLever(svg, o);
+}
+
+// Botonera segmentada
+function seg(container, items, value, onChange) {
+  const el = H('span', { class: 'seg' }, container);
+  const api = { el, value, buttons: {} };
+  items.forEach(it => {
+    const b = H('button', { type: 'button', 'aria-pressed': String(it.v === value) }, el);
+    b.innerHTML = it.label;
+    b.addEventListener('click', () => { if (b.disabled) return; api.set(it.v); onChange(it.v); });
+    api.buttons[it.v] = b;
+  });
+  api.set = v => { api.value = v; for (const k in api.buttons) api.buttons[k].setAttribute('aria-pressed', String(k == v)); };
+  api.disable = (v, dis, title) => { const b = api.buttons[v]; if (b) { b.disabled = dis; b.title = title || ''; } };
+  return api;
+}
+
+// Tooltip
+const tipEl = $('#tip');
+function showTip(e, html) {
+  tipEl.innerHTML = html; tipEl.style.opacity = 1;
+  const w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+  let x = e.clientX + 14, y = e.clientY + 14;
+  if (x + w > innerWidth - 8) x = e.clientX - w - 14;
+  if (y + h > innerHeight - 8) y = e.clientY - h - 14;
+  tipEl.style.left = x + 'px'; tipEl.style.top = y + 'px';
+}
+const hideTip = () => { tipEl.style.opacity = 0; };
+
+// Tabs
+$$('.tab-btn').forEach(b => b.addEventListener('click', () => {
+  $$('.tab-btn').forEach(x => x.setAttribute('aria-selected', String(x === b)));
+  $$('.tab').forEach(t => t.classList.toggle('active', t.id === b.dataset.tab));
+  window.dispatchEvent(new Event('tabchange'));
+}));
+
+// Polígonos: recorte por semiplano (Sutherland–Hodgman) y Voronoi recortado
+function clipHalf(poly, nx, ny, c) {
+  const out = [];
+  for (let i = 0; i < poly.length; i++) {
+    const P = poly[i], Q = poly[(i + 1) % poly.length];
+    const dp = nx * P[0] + ny * P[1] - c, dq = nx * Q[0] + ny * Q[1] - c;
+    if (dp <= 0) out.push(P);
+    if ((dp < 0 && dq > 0) || (dp > 0 && dq < 0)) { const t = dp / (dp - dq); out.push([P[0] + t * (Q[0] - P[0]), P[1] + t * (Q[1] - P[1])]); }
+  }
+  return out;
+}
+function voronoi(sites, clip) {
+  return sites.map((s, i) => {
+    let poly = clip.slice();
+    sites.forEach((o, j) => {
+      if (i === j) return;
+      const nx = o[0] - s[0], ny = o[1] - s[1];
+      poly = clipHalf(poly, nx, ny, (o[0] ** 2 + o[1] ** 2 - s[0] ** 2 - s[1] ** 2) / 2);
+    });
+    return poly;
+  });
+}
+const polyPath = p => p.length ? 'M' + p.map(q => q[0].toFixed(1) + ',' + q[1].toFixed(1)).join('L') + 'Z' : '';
+
+// Arco curvo entre dos puntos (como las rutas del mapa de referencia)
+function arcPath(a, b, bend = 0.25) {
+  const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2;
+  const dx = b[0] - a[0], dy = b[1] - a[1];
+  const cx = mx - dy * bend, cy = my + dx * bend;
+  return { d: `M${a[0]},${a[1]} Q${cx},${cy} ${b[0]},${b[1]}`, c: [cx, cy] };
+}
+function quadPoint(a, c, b, t) {
+  return [(1 - t) ** 2 * a[0] + 2 * (1 - t) * t * c[0] + t * t * b[0], (1 - t) ** 2 * a[1] + 2 * (1 - t) * t * c[1] + t * t * b[1]];
+}
+// ══════════════════════════════════════════════════════════════════
+//  SOLAPA 1 · ESCENA DE LA BÓVEDA
+// ══════════════════════════════════════════════════════════════════
+const Vault = (() => {
+  const svg = $('#scene');
+  const TOPE = 1200, MIN_HIST = 300, SS = 1.10 * MIN_HIST, SALDO0 = 620;
+  const DAY_SECONDS = 4;
+  const st = { t: 0, saldo: SALDO0, ocio: 0, playing: true, speed: 1, hist: [], quiebre: false };
+  // pre-historia (para mostrar de dónde sale el mínimo histórico)
+  const pre = [];
+  for (let k = -30; k < 0; k++) pre.push({ d: k, s: 640 + 110 * Math.sin(k / 3.7) + 40 * Math.cos(k / 1.3) - (k === -12 ? 260 : k === -11 || k === -13 ? 120 : 0) });
+  const minPre = Math.min(...pre.map(p => p.s));
+  pre.forEach(p => { p.s = p.s - minPre + MIN_HIST; });   // el mínimo histórico queda en 300
+  pre[pre.length - 1].s = SALDO0;
+
+  // ── Fondo ─────────────────────────────────────────────
+  S('rect', { x: 0, y: 0, width: 1400, height: 425, fill: '#eef1f4' }, svg);
+  S('rect', { x: 0, y: 330, width: 1400, height: 95, fill: '#e5e9ee' }, svg);
+  S('rect', { x: 0, y: 425, width: 1400, height: 95, fill: '#d5dbe2' }, svg);
+  for (let x = 0; x < 1080; x += 70) S('line', { x1: x, y1: 425, x2: x - 30, y2: 520, stroke: '#c8cfd8', 'stroke-width': 1 }, svg);
+  S('rect', { x: 1080, y: 425, width: 320, height: 95, fill: '#bcc3cc' }, svg);
+  for (let x = 1090; x < 1400; x += 46) S('rect', { x, y: 470, width: 24, height: 4, fill: '#f2c94c' }, svg);
+  S('text', { x: 1092, y: 515, 'font-size': 10, fill: '#5d6672', 'font-weight': 700, text: 'CARGA Y DESCARGA' }, svg);
+
+  // ── Cliente comercial (póster) ────────────────────────
+  const poster = S('g', {}, svg);
+  S('rect', { x: 22, y: 178, width: 206, height: 58, rx: 10, fill: '#d62f3a' }, poster);
+  S('text', { x: 125, y: 207, 'text-anchor': 'middle', 'font-size': 21, 'font-weight': 800, fill: '#fff', 'letter-spacing': 1, text: 'MEGAMARKET' }, poster);
+  S('text', { x: 125, y: 226, 'text-anchor': 'middle', 'font-size': 10.5, fill: '#ffe1e3', text: 'cliente comercial · marca ficticia' }, poster);
+
+  // ── Ventanilla de depósitos ───────────────────────────
+  function ventanilla(x, label, tellerColor) {
+    const g = S('g', {}, svg);
+    S('rect', { x: x + 5, y: 196, width: 130, height: 24, rx: 5, fill: '#16324f' }, g);
+    S('text', { x: x + 70, y: 213, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 800, fill: '#fff', 'letter-spacing': 1, text: label }, g);
+    S('rect', { x: x + 10, y: 222, width: 120, height: 102, fill: 'url(#g-glass)', stroke: '#9fb3c5', 'stroke-width': 2 }, g);
+    S('circle', { cx: x + 70, cy: 262, r: 14, fill: tellerColor, opacity: .55 }, g);
+    S('path', { d: `M${x + 48},324 q0,-42 22,-44 q22,2 22,44z`, fill: tellerColor, opacity: .55 }, g);
+    S('line', { x1: x + 70, y1: 222, x2: x + 70, y2: 324, stroke: '#fff', 'stroke-width': 1, opacity: .5 }, g);
+    S('rect', { x, y: 324, width: 140, height: 101, fill: '#8a6a4c' }, g);
+    S('rect', { x: x - 4, y: 318, width: 148, height: 10, rx: 3, fill: '#5e4633' }, g);
+    S('rect', { x: x + 50, y: 312, width: 40, height: 6, fill: '#222' }, g);
+    for (let i = 0; i < 3; i++) S('rect', { x: x + 12 + i * 42, y: 340, width: 34, height: 70, rx: 3, fill: 'none', stroke: '#6f553c', 'stroke-width': 2 }, g);
+    return g;
+  }
+  ventanilla(250, 'DEPÓSITOS', '#7f93a8');
+  ventanilla(940, 'CAJA · PAGOS', '#7f93a8');
+
+  // ── Bóveda ────────────────────────────────────────────
+  const cx = 640, cy = 300, R = 112;
+  const vault = S('g', {}, svg);
+  S('rect', { x: 440, y: 150, width: 400, height: 275, rx: 10, fill: 'url(#g-steel-v)', stroke: '#5d6875', 'stroke-width': 3 }, vault);
+  for (let x = 455; x <= 825; x += 37) { S('circle', { cx: x, cy: 163, r: 3, fill: '#5d6875' }, vault); S('circle', { cx: x, cy: 412, r: 3, fill: '#5d6875' }, vault); }
+  S('rect', { x: 580, y: 155, width: 120, height: 20, rx: 4, fill: '#2f3b4a' }, vault);
+  S('text', { x: 640, y: 170, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 800, fill: '#c99a2e', 'letter-spacing': 3, text: 'BÓVEDA' }, vault);
+  S('circle', { cx, cy, r: R + 10, fill: 'none', stroke: '#3f4955', 'stroke-width': 18 }, vault);
+  S('circle', { cx, cy, r: R + 19, fill: 'none', stroke: '#a7b1bc', 'stroke-width': 2 }, vault);
+  S('circle', { cx, cy, r: R, fill: '#1d242c' }, vault);
+  const clip = S('clipPath', { id: 'vault-clip' }, svg);
+  S('circle', { cx, cy, r: R - 2 }, clip);
+  const inside = S('g', { 'clip-path': 'url(#vault-clip)' }, vault);
+  S('rect', { x: cx - R, y: cy - R, width: 2 * R, height: 2 * R, fill: '#27303a' }, inside);
+  const shelves = [262, 330, 398];
+  shelves.forEach(y => S('rect', { x: cx - R, y, width: 2 * R, height: 6, fill: '#6b7785' }, inside));
+  // ranuras de ladrillos de billetes que entran completos en el círculo
+  const slots = [];
+  shelves.slice().reverse().forEach(y => {
+    for (let row = 0; row < 3; row++) {
+      for (let x = cx - R; x < cx + R; x += 31) {
+        const bx = x + 3, by = y - 15 - row * 15, w = 28, h = 13;
+        const inside = [[bx, by], [bx + w, by], [bx, by + h], [bx + w, by + h]].every(([px, py]) => (px - cx) ** 2 + (py - cy) ** 2 < (R - 4) ** 2);
+        if (inside) slots.push([bx, by]);
+      }
+    }
+  });
+  const bricks = slots.map(([x, y]) => {
+    const g = S('g', { opacity: 0 }, inside);
+    S('rect', { x, y, width: 28, height: 13, rx: 2, fill: '#3f9a62', stroke: '#24603c' }, g);
+    S('rect', { x: x + 11, y, width: 6, height: 13, fill: '#e8d9a8' }, g);
+    return g;
+  });
+  // puerta blindada abierta
+  S('rect', { x: 752, y: 236, width: 88, height: 10, rx: 3, fill: '#4b5563' }, vault);
+  S('rect', { x: 752, y: 354, width: 88, height: 10, rx: 3, fill: '#4b5563' }, vault);
+  const door = S('g', {}, svg);
+  S('ellipse', { cx: 884, cy, rx: 50, ry: 124, fill: '#4b5563' }, door);
+  S('ellipse', { cx: 878, cy, rx: 46, ry: 122, fill: 'url(#g-door)', stroke: '#3f4955', 'stroke-width': 3 }, door);
+  S('ellipse', { cx: 878, cy, rx: 33, ry: 90, fill: 'none', stroke: '#5d6875', 'stroke-width': 4 }, door);
+  for (let k = 0; k < 10; k++) {
+    const a = k / 10 * Math.PI * 2;
+    S('circle', { cx: 878 + Math.cos(a) * 40, cy: cy + Math.sin(a) * 108, r: 3.2, fill: '#3f4955' }, door);
+  }
+  const wheel = S('g', {}, door);
+  S('ellipse', { cx: 878, cy, rx: 12, ry: 30, fill: 'none', stroke: '#2f3b4a', 'stroke-width': 4 }, wheel);
+  [[0, 1], [0.85, 0.5], [-0.85, 0.5]].forEach(([dx, dy]) => S('line', { x1: 878 - dx * 12, y1: cy - dy * 30, x2: 878 + dx * 12, y2: cy + dy * 30, stroke: '#2f3b4a', 'stroke-width': 3 }, wheel));
+
+  // ── Medidor de saldo ──────────────────────────────────
+  const meter = S('g', {}, svg);
+  S('text', { x: 440, y: 36, 'font-size': 12, 'font-weight': 800, fill: '#1f2430', 'letter-spacing': 1, text: 'SALDO EN BÓVEDA' }, meter);
+  const meterVal = S('text', { x: 840, y: 36, 'text-anchor': 'end', 'font-size': 15, 'font-weight': 800, fill: '#16324f' }, meter);
+  S('rect', { x: 440, y: 44, width: 400, height: 22, rx: 11, fill: '#d9dee5' }, meter);
+  const meterFill = S('rect', { x: 440, y: 44, width: 0, height: 22, rx: 11, fill: '#24507a' }, meter);
+  const xs = v => 440 + 400 * clamp(v / (TOPE * 1.1), 0, 1);
+  S('line', { x1: xs(SS), y1: 40, x2: xs(SS), y2: 72, stroke: '#c0392b', 'stroke-width': 2.5 }, meter);
+  S('text', { x: xs(SS), y: 86, 'text-anchor': 'middle', 'font-size': 10.5, 'font-weight': 700, fill: '#c0392b', text: `SS = 1,10 × mín. hist. = ${fmtM(SS)}` }, meter);
+  S('line', { x1: xs(TOPE), y1: 40, x2: xs(TOPE), y2: 72, stroke: '#b7791f', 'stroke-width': 2.5 }, meter);
+  S('text', { x: xs(TOPE), y: 86, 'text-anchor': 'middle', 'font-size': 10.5, 'font-weight': 700, fill: '#b7791f', text: `tope ${fmtM(TOPE)}` }, meter);
+  S('text', { x: 640, y: 108, 'text-anchor': 'middle', 'font-size': 11, fill: '#6f7482', text: 'mínimo histórico del último año: ' + fmtM(MIN_HIST) }, meter);
+
+  // ── ATM ───────────────────────────────────────────────
+  const atm = S('g', {}, svg);
+  S('rect', { x: 1150, y: 238, width: 78, height: 187, rx: 8, fill: '#2f3b4a' }, atm);
+  S('rect', { x: 1150, y: 238, width: 78, height: 22, rx: 8, fill: '#16324f' }, atm);
+  S('text', { x: 1189, y: 254, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 800, fill: '#fff', 'letter-spacing': 2, text: 'ATM' }, atm);
+  S('rect', { x: 1160, y: 268, width: 58, height: 38, rx: 3, fill: '#7fd1a8' }, atm);
+  S('text', { x: 1189, y: 291, 'text-anchor': 'middle', 'font-size': 9, 'font-weight': 700, fill: '#1d4d36', text: 'RETIRO' }, atm);
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) S('rect', { x: 1166 + c * 16, y: 346 + r * 11, width: 12, height: 7, rx: 1, fill: '#c3cbd4' }, atm);
+  S('rect', { x: 1164, y: 324, width: 50, height: 6, rx: 2, fill: '#111' }, atm);
+
+  // ── Personas ──────────────────────────────────────────
+  function person(color, flip) {
+    const g = S('g', {}, svg);
+    const body = S('g', { transform: flip ? 'scale(-1,1)' : '' }, g);
+    const legL = S('rect', { x: -10, y: -52, width: 8, height: 52, rx: 3, fill: '#2b2f3a' }, body);
+    const legR = S('rect', { x: 2, y: -52, width: 8, height: 52, rx: 3, fill: '#2b2f3a' }, body);
+    S('rect', { x: -17, y: -112, width: 34, height: 64, rx: 10, fill: color }, body);
+    S('circle', { cx: 0, cy: -128, r: 14, fill: '#e0b38c' }, body);
+    const arm = S('line', { x1: 6, y1: -96, x2: 30, y2: -76, stroke: color, 'stroke-width': 8, 'stroke-linecap': 'round' }, body);
+    return { g, body, legL, legR, arm };
+  }
+  // cliente que retira por caja y por ATM (mirando a la izquierda)
+  const pCaja = person('#4f6d8f', true); pCaja.g.setAttribute('transform', 'translate(1108,425)');
+  const pAtm = person('#7a5aa6', true); pAtm.g.setAttribute('transform', 'translate(1268,425)');
+  // cliente comercial con carrito de bolsos
+  const client = S('g', {}, svg);
+  const cBody = S('g', {}, client);
+  const cLegL = S('rect', { x: -10, y: -52, width: 8, height: 52, rx: 3, fill: '#2b2f3a' }, cBody);
+  const cLegR = S('rect', { x: 2, y: -52, width: 8, height: 52, rx: 3, fill: '#2b2f3a' }, cBody);
+  S('rect', { x: -17, y: -112, width: 34, height: 64, rx: 10, fill: '#d62f3a' }, cBody);
+  S('text', { x: 0, y: -80, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 800, fill: '#fff', text: 'M' }, cBody);
+  S('circle', { cx: 0, cy: -128, r: 14, fill: '#e0b38c' }, cBody);
+  S('path', { d: 'M-14,-136 q14,-14 28,0 z', fill: '#d62f3a' }, cBody);
+  S('rect', { x: 0, y: -140, width: 22, height: 5, rx: 2, fill: '#d62f3a' }, cBody);
+  S('line', { x1: 6, y1: -96, x2: 38, y2: -82, stroke: '#d62f3a', 'stroke-width': 8, 'stroke-linecap': 'round' }, cBody);
+  const cart = S('g', {}, cBody);
+  S('line', { x1: 40, y1: -86, x2: 46, y2: -8, stroke: '#4b5563', 'stroke-width': 5, 'stroke-linecap': 'round' }, cart);
+  S('rect', { x: 44, y: -10, width: 84, height: 7, rx: 3, fill: '#4b5563' }, cart);
+  S('circle', { cx: 56, cy: -1, r: 7, fill: '#111' }, cart); S('circle', { cx: 116, cy: -1, r: 7, fill: '#111' }, cart);
+  const BAG_POS = [[50, -42], [76, -42], [102, -42], [63, -72], [89, -72], [76, -102]];
+  const bags = BAG_POS.map(([x, y]) => S('use', { href: '#ico-bag', x, y, width: 26, height: 30, opacity: 0 }, cart));
+
+  // ── Camión de caudales ────────────────────────────────
+  const truck = S('g', {}, svg);
+  S('rect', { x: 1160, y: 432, width: 156, height: 66, rx: 6, fill: '#2f3b4a' }, truck);
+  S('rect', { x: 1160, y: 452, width: 156, height: 12, fill: '#c99a2e' }, truck);
+  S('text', { x: 1238, y: 462, 'text-anchor': 'middle', 'font-size': 10, 'font-weight': 800, fill: '#2f3b4a', 'letter-spacing': 2, text: 'CAUDALES' }, truck);
+  S('path', { d: 'M1316,446 h34 l22,24 v28 h-56z', fill: '#3e4c5e' }, truck);
+  S('rect', { x: 1326, y: 452, width: 22, height: 16, rx: 2, fill: '#bfe0f5' }, truck);
+  [1188, 1290, 1350].forEach(x => { S('circle', { cx: x, cy: 502, r: 13, fill: '#111' }, truck); S('circle', { cx: x, cy: 502, r: 5, fill: '#9aa3ae' }, truck); });
+  S('rect', { x: 1152, y: 436, width: 10, height: 58, fill: '#1f2833' }, truck);
+  const truckLabel = S('text', { x: 1238, y: 488, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 700, fill: '#fff' }, truck);
+
+  // ── Palancas ──────────────────────────────────────────
+  const cable = (x1, y1, x2, y2) => S('path', { d: `M${x1},${y1} L${x2},${y2}`, stroke: '#9aa3ae', 'stroke-width': 2, 'stroke-dasharray': '4 4', fill: 'none' }, svg);
+  cable(125, 160, 125, 178); cable(1010, 160, 1010, 196); cable(1189, 160, 1189, 238); cable(1316, 160, 1316, 430);
+  const levers = {};
+  const unit = v => `${nf(v)} $M/día`;
+  levers.dep = makeLever(svg, { x: 125, y: 14, min: 0, max: 200, value: 80, label: 'Depósitos', sub: 'bolsos del cliente comercial', color: '#2f7d4f', knob: '#2f7d4f', fmt: unit, onChange: () => {} });
+  levers.vent = makeLever(svg, { x: 1010, y: 14, min: 0, max: 120, value: 45, label: 'Retiros por caja', sub: 'ventanilla de pagos', fmt: unit });
+  levers.atm = makeLever(svg, { x: 1189, y: 14, min: 0, max: 120, value: 60, label: 'Retiros ATM', sub: 'cajero automático', fmt: unit });
+  levers.cam = makeLever(svg, { x: 1316, y: 14, min: -200, max: 200, value: 0, step: 5, bipolar: true, ends: ['trae', 'lleva'],
+    label: 'Camión', sub: 'remesa (decisión)', color: '#c99a2e', knob: '#c99a2e',
+    fmt: v => v > 0 ? `lleva ${nf(v)}/día` : v < 0 ? `trae ${nf(-v)}/día` : 'quieto' });
+
+  // ── Partículas ────────────────────────────────────────
+  const fx = S('g', {}, svg);
+  const parts = [];
+  function spawn(kind, a, b, c, dur) {
+    const isBag = kind === 'bag', isOcto = kind === 'octo';
+    const el = S('use', { href: isBag ? '#ico-bag' : isOcto ? '#ico-octo' : '#ico-bill', width: isBag ? 24 : isOcto ? 26 : 24, height: isBag ? 28 : isOcto ? 21 : 13 }, fx);
+    parts.push({ el, a, b, c, t: 0, dur, w: isBag ? 12 : 13, h: isBag ? 14 : 8 });
+  }
+  const VC = [cx, cy];
+  const acc = { vent: 0, atm: 0, cam: 0 };
+
+  // ── KPIs y gráfico chico ──────────────────────────────
+  const kpiBox = $('#vault-kpis');
+  const kpi = (lbl) => { const d = H('div', { class: 'kpi' }, kpiBox); H('div', { class: 'lbl', text: lbl }, d); const v = H('div', { class: 'val' }, d); const n = H('div', { class: 'note' }, d); return { v, n }; };
+  const K = { dia: kpi('Día'), saldo: kpi('Saldo en bóveda'), flujo: kpi('Flujo neto (dep − ret)'), ocio: kpi('Costo ocioso acumulado') };
+  const alertBox = $('#vault-alert');
+  const spark = $('#vault-spark');
+
+  function drawSpark() {
+    spark.innerHTML = '';
+    const W = 860, Hh = 170, L = 52, Rr = 12, T = 12, B = 26;
+    const data = [...pre.map(p => ({ d: p.d, s: p.s })), ...st.hist].slice(-75);
+    if (!data.length) return;
+    const d0 = data[0].d, d1 = Math.max(data[data.length - 1].d, d0 + 10);
+    const X = d => L + (W - L - Rr) * (d - d0) / (d1 - d0);
+    const ymax = TOPE * 1.15, Y = v => T + (Hh - T - B) * (1 - clamp(v, 0, ymax) / ymax);
+    [0, 400, 800, 1200].forEach(v => {
+      S('line', { x1: L, x2: W - Rr, y1: Y(v), y2: Y(v), stroke: '#eceae4' }, spark);
+      S('text', { x: L - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 11, fill: '#6f7482', text: nf(v) }, spark);
+    });
+    S('text', { x: L, y: Hh - 6, 'font-size': 11, fill: '#6f7482', text: 'saldo diario ($M ficticios) · a la izquierda del 0 es historia' }, spark);
+    S('line', { x1: X(0), x2: X(0), y1: T, y2: Hh - B, stroke: '#9aa3ae', 'stroke-dasharray': '3 3' }, spark);
+    S('text', { x: X(0) - 4, y: Hh - B - 6, 'text-anchor': 'end', 'font-size': 10.5, fill: '#6f7482', text: 'día 0 →' }, spark);
+    S('line', { x1: L, x2: W - Rr, y1: Y(SS), y2: Y(SS), stroke: '#c0392b', 'stroke-dasharray': '6 4', 'stroke-width': 1.5 }, spark);
+    S('text', { x: W - Rr, y: Y(SS) - 5, 'text-anchor': 'end', 'font-size': 11, 'font-weight': 700, fill: '#c0392b', text: 'stock de seguridad' }, spark);
+    S('line', { x1: L, x2: W - Rr, y1: Y(TOPE), y2: Y(TOPE), stroke: '#b7791f', 'stroke-dasharray': '6 4', 'stroke-width': 1.5 }, spark);
+    S('text', { x: W - Rr, y: Y(TOPE) - 5, 'text-anchor': 'end', 'font-size': 11, 'font-weight': 700, fill: '#b7791f', text: 'tope bóveda / seguro' }, spark);
+    const m = pre.reduce((a, p) => p.s < a.s ? p : a, pre[0]);
+    if (m.d >= d0) { S('circle', { cx: X(m.d), cy: Y(m.s), r: 5, fill: 'none', stroke: '#c0392b', 'stroke-width': 2 }, spark); S('text', { x: X(m.d), y: Y(m.s) + 18, 'text-anchor': 'middle', 'font-size': 10.5, fill: '#c0392b', text: 'mínimo histórico' }, spark); }
+    S('path', { d: 'M' + data.map(p => `${X(p.d).toFixed(1)},${Y(p.s).toFixed(1)}`).join('L'), fill: 'none', stroke: '#24507a', 'stroke-width': 2 }, spark);
+    const last = { d: st.t, s: st.saldo };
+    S('circle', { cx: X(Math.min(last.d, d1)), cy: Y(last.s), r: 4.5, fill: '#24507a', stroke: '#fff', 'stroke-width': 2 }, spark);
+  }
+
+  function updateUI() {
+    const dep = levers.dep.value, vent = levers.vent.value, atm = levers.atm.value, cam = levers.cam.value;
+    const neto = dep - vent - atm;
+    const day = Math.floor(st.t) + 1;
+    K.dia.v.textContent = nf(day);
+    K.dia.n.textContent = st.playing ? 'simulando…' : 'en pausa';
+    K.saldo.v.textContent = fmtM(st.saldo, { d: 0 });
+    K.saldo.n.textContent = `sobre el SS: ${fmtM(Math.max(0, st.saldo - SS), { d: 0 })}`;
+    K.flujo.v.textContent = (neto >= 0 ? '+' : '−') + fmtM(Math.abs(neto), { d: 0 }).replace('$', '$');
+    K.flujo.v.style.color = neto >= 0 ? '#1f8a4c' : '#c0392b';
+    K.flujo.n.textContent = cam ? `remesa: ${cam > 0 ? 'se lleva' : 'trae'} ${fmtM(Math.abs(cam), { d: 0 })}/día` : 'sin remesa';
+    K.ocio.v.textContent = fmtM(st.ocio);
+    K.ocio.n.textContent = `hoy: ${fmtM(st.saldo * G.iDay)} por día (TNA ${pct(G.tna)})`;
+    meterVal.textContent = fmtM(st.saldo, { d: 0 });
+    meterFill.setAttribute('width', 400 * clamp(st.saldo / (TOPE * 1.1), 0, 1));
+    meterFill.setAttribute('fill', st.saldo < SS ? '#c0392b' : st.saldo > TOPE ? '#b7791f' : '#24507a');
+    const nb = Math.round(bricks.length * clamp(st.saldo / TOPE, 0, 1));
+    bricks.forEach((b, i) => b.setAttribute('opacity', i < nb ? 1 : 0));
+    truckLabel.textContent = cam > 0 ? '← se lleva' : cam < 0 ? 'trae →' : '';
+    const outflow = vent + atm - dep + cam;
+    let cls = 'ok', msg = '✔ Saldo dentro de la banda: entre el stock de seguridad y el tope.';
+    if (st.quiebre) { cls = 'bad'; msg = '✖ ¡Quiebre! La bóveda se quedó sin efectivo: no se puede pagar a los clientes. Traé plata con el camión.'; }
+    else if (st.saldo < SS) { cls = 'bad'; msg = '⚠ Por debajo del stock de seguridad: riesgo de no poder pagar. Mové la palanca del camión hacia “trae”.'; }
+    else if (st.saldo > TOPE) { cls = 'warn'; msg = '⚠ Sobre el tope de la bóveda / del seguro: hay que sacar plata (camión “lleva”).'; }
+    else if (outflow > 0) { const dias = (st.saldo - SS) / outflow; msg += ` Al ritmo actual, llegás al SS en ~${nf(dias, 1)} días.`; }
+    else if (st.saldo - SS > 400) { cls = 'warn'; msg = `⚠ Mucha plata parada: ${fmtM(st.saldo - SS, { d: 0 })} arriba del SS cuestan ${fmtM((st.saldo - SS) * G.iDay)} por día. ¿Conviene que el camión se la lleve?`; }
+    alertBox.innerHTML = `<div class="alert ${cls}">${msg}</div>`;
+  }
+
+  // ── Bucle de simulación ───────────────────────────────
+  let last = performance.now(), lastSpark = -1, lastBags = 0, lastPhaseDay = -1;
+  function frame(now) {
+    const dtReal = Math.min(0.05, (now - last) / 1000); last = now;
+    const visible = $('#tab-logica').classList.contains('active') && !document.hidden;
+    if (st.playing && visible) step(dtReal * st.speed / DAY_SECONDS, dtReal * st.speed);
+    requestAnimationFrame(frame);
+  }
+  function step(dt, dtVis) {
+    const dep = levers.dep.value, vent = levers.vent.value, atm = levers.atm.value, cam = levers.cam.value;
+    const prevDay = Math.floor(st.t);
+    const flow = dep - vent - atm - cam;
+    st.saldo += flow * dt;
+    st.quiebre = st.saldo <= 0;
+    if (st.saldo < 0) st.saldo = 0;
+    st.ocio += st.saldo * G.iDay * dt;
+    st.t += dt;
+    if (Math.floor(st.t) !== prevDay) { st.hist.push({ d: Math.floor(st.t), s: st.saldo }); if (st.hist.length > 200) st.hist.shift(); }
+
+    // cliente comercial: 1 viaje por día con N bolsos
+    const phase = st.t % 1;
+    const N = dep > 0 ? clamp(Math.round(dep / 30), 1, 6) : 0;
+    let x = -80, shown = 0, facing = 1;
+    if (N > 0) {
+      if (phase < 0.35) { x = lerp(-70, 150, phase / 0.35); shown = N; }
+      else if (phase < 0.7) { x = 150; shown = N - Math.min(N, Math.floor((phase - 0.35) / 0.35 * (N + 0.999))); }
+      else { x = lerp(150, -70, (phase - 0.7) / 0.3); shown = 0; facing = -1; }
+    }
+    const walking = N > 0 && (phase < 0.35 || phase >= 0.7);
+    const sw = walking ? Math.sin(st.t * 60) * 7 : 0;
+    cLegL.setAttribute('transform', `translate(${sw},0)`); cLegR.setAttribute('transform', `translate(${-sw},0)`);
+    client.setAttribute('transform', `translate(${x},425) scale(${facing},1)`);
+    cart.setAttribute('opacity', 1);
+    if (shown < lastBags && facing === 1) {
+      for (let k = shown; k < lastBags; k++) {
+        const [bx, by] = BAG_POS[k];
+        const a = [x + bx + 13, 425 + by + 15];
+        spawn('bag', a, VC, [330, 150], 0.18);
+      }
+    }
+    bags.forEach((b, i) => b.setAttribute('opacity', i < shown ? 1 : 0));
+    lastBags = shown;
+
+    // salidas: billetes a caja y ATM; octopacks al/desde camión
+    acc.vent += vent / 6 * dt; acc.atm += atm / 6 * dt; acc.cam += Math.abs(cam) / 18 * dt;
+    while (acc.vent >= 1) { acc.vent--; spawn('bill', VC, [1092, 330], [960, 170], 0.2); }
+    while (acc.atm >= 1) { acc.atm--; spawn('bill', VC, [1189, 327], [1060, 150], 0.22); }
+    while (acc.cam >= 1) { acc.cam--; if (cam > 0) spawn('octo', VC, [1172, 462], [960, 420], 0.22); else spawn('octo', [1172, 462], VC, [960, 420], 0.22); }
+    const arm = Math.sin(st.t * 30) * 3;
+    pCaja.arm.setAttribute('transform', `rotate(${arm},6,-96)`);
+    pAtm.arm.setAttribute('transform', `rotate(${-arm},6,-96)`);
+    wheel.setAttribute('transform', `rotate(${(st.t * 40) % 360},878,${cy})`);
+
+    for (let i = parts.length - 1; i >= 0; i--) {
+      const p = parts[i];
+      p.t += dt / p.dur;
+      if (p.t >= 1) { p.el.remove(); parts.splice(i, 1); continue; }
+      const [px, py] = quadPoint(p.a, p.c, p.b, p.t);
+      p.el.setAttribute('x', px - p.w); p.el.setAttribute('y', py - p.h);
+      p.el.setAttribute('opacity', p.t > 0.85 ? (1 - p.t) / 0.15 : 1);
+    }
+    if (Math.floor(st.t * 4) !== lastSpark) { lastSpark = Math.floor(st.t * 4); drawSpark(); }
+    updateUI();
+  }
+
+  // ── Controles ─────────────────────────────────────────
+  const playBtn = $('#sim-play');
+  playBtn.addEventListener('click', () => { st.playing = !st.playing; playBtn.textContent = st.playing ? '⏸ Pausa' : '▶ Seguir'; updateUI(); });
+  $$('#sim-speed button').forEach(b => b.addEventListener('click', () => {
+    st.speed = +b.dataset.v; $$('#sim-speed button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  }));
+  $('#sim-reset').addEventListener('click', () => {
+    Object.assign(st, { t: 0, saldo: SALDO0, ocio: 0, hist: [], quiebre: false });
+    parts.forEach(p => p.el.remove()); parts.length = 0;
+    levers.dep.set(80, true); levers.vent.set(45, true); levers.atm.set(60, true); levers.cam.set(0, true);
+    drawSpark(); updateUI();
+  });
+  const tna1 = $('#tna1');
+  tna1.value = Math.round(G.tna * 100);
+  tna1.addEventListener('input', () => { G.tna = tna1.value / 100; G.emit(); });
+  G.on(() => { tna1.value = Math.round(G.tna * 100); $('#tna1-out').textContent = pct(G.tna); updateUI(); });
+  $('#tna1-out').textContent = pct(G.tna);
+
+  drawSpark(); updateUI();
+  requestAnimationFrame(frame);
+  return { st, SS, TOPE };
+})();
+// ══════════════════════════════════════════════════════════════════
+//  MAPAS: AMBA (por comuna, con abono) y PROVINCIAS (camión/avión/combinado)
+// ══════════════════════════════════════════════════════════════════
+
+// ── Geometría base ────────────────────────────────────────────────
+const CABA_POLY = [[-58.462, -34.535], [-58.43, -34.545], [-58.405, -34.56], [-58.38, -34.575], [-58.365, -34.588], [-58.352, -34.6],
+  [-58.335, -34.615], [-58.345, -34.63], [-58.357, -34.638], [-58.375, -34.645], [-58.392, -34.66], [-58.412, -34.668], [-58.428, -34.678],
+  [-58.445, -34.69], [-58.462, -34.705], [-58.478, -34.69], [-58.5, -34.672], [-58.518, -34.66], [-58.531, -34.645], [-58.528, -34.625],
+  [-58.53, -34.605], [-58.531, -34.585], [-58.52, -34.57], [-58.5, -34.548], [-58.48, -34.54]];
+const AMBA_POLY = [[-58.66, -34.36], [-58.58, -34.4], [-58.52, -34.45], [-58.48, -34.51], [-58.462, -34.535], [-58.43, -34.545], [-58.405, -34.56],
+  [-58.38, -34.575], [-58.365, -34.588], [-58.352, -34.6], [-58.335, -34.615], [-58.33, -34.64], [-58.3, -34.66], [-58.26, -34.7], [-58.22, -34.74],
+  [-58.17, -34.77], [-58.2, -34.84], [-58.3, -34.88], [-58.42, -34.9], [-58.55, -34.88], [-58.68, -34.82], [-58.77, -34.72], [-58.79, -34.6],
+  [-58.77, -34.48], [-58.72, -34.4]];
+const ARG_POLY = [[-66.2, -21.8], [-65.7, -22.1], [-64.9, -22.1], [-64.3, -22.8], [-63.9, -22.0], [-62.8, -22.0], [-62.3, -22.4], [-61.4, -23.3],
+  [-60.0, -24.0], [-58.8, -24.8], [-57.6, -25.4], [-58.2, -26.6], [-58.6, -27.2], [-57.5, -27.4], [-56.4, -27.5], [-55.6, -27.3], [-54.8, -26.5],
+  [-54.6, -25.6], [-53.8, -25.9], [-53.6, -26.6], [-54.2, -27.3], [-55.7, -28.2], [-56.8, -29.6], [-57.6, -30.3], [-57.9, -31.5], [-58.2, -32.6],
+  [-58.4, -33.9], [-58.5, -34.4], [-57.4, -35.3], [-57.1, -36.3], [-56.7, -36.9], [-57.5, -38.0], [-58.8, -38.6], [-60.6, -38.9], [-62.3, -38.8],
+  [-62.0, -39.4], [-62.3, -40.6], [-63.8, -41.1], [-65.1, -40.9], [-65.0, -42.0], [-63.6, -42.6], [-64.4, -42.9], [-65.0, -43.6], [-65.3, -44.6],
+  [-66.5, -45.1], [-67.5, -46.0], [-66.3, -47.0], [-65.9, -47.8], [-67.4, -49.0], [-68.4, -50.1], [-69.0, -51.0], [-69.2, -51.6], [-68.4, -52.3],
+  [-69.6, -52.4], [-71.0, -52.1], [-72.3, -51.6], [-73.2, -50.6], [-73.0, -49.3], [-72.4, -48.3], [-71.9, -47.2], [-71.6, -46.2], [-71.8, -45.0],
+  [-71.3, -44.2], [-71.8, -43.2], [-71.7, -42.2], [-71.9, -41.0], [-71.6, -39.8], [-71.1, -38.7], [-70.9, -37.6], [-71.1, -36.6], [-70.4, -35.6],
+  [-69.9, -34.4], [-69.8, -33.2], [-70.0, -32.4], [-69.8, -31.0], [-69.6, -29.6], [-68.9, -28.2], [-68.4, -27.0], [-68.3, -25.8], [-67.6, -24.6],
+  [-67.1, -23.6], [-66.8, -22.6]];
+const TDF_POLY = [[-68.6, -52.65], [-68.6, -54.9], [-67.0, -54.9], [-65.2, -54.7], [-66.5, -54.4], [-67.6, -53.6], [-68.3, -53.0]];
+const MALV_POLY = [[-61.2, -51.4], [-60.0, -51.2], [-59.4, -51.5], [-58.4, -51.3], [-57.7, -51.6], [-58.6, -52.2], [-59.8, -52.2], [-61.0, -52.0]];
+const LAT_NORTE = -29.9;
+
+function makeProj(lon0, lon1, lat0, lat1, W, Hh, pad = 8) {
+  const k = Math.cos(((lat0 + lat1) / 2) * Math.PI / 180);
+  const s = Math.min((W - 2 * pad) / ((lon1 - lon0) * k), (Hh - 2 * pad) / (lat0 - lat1));
+  const ox = (W - (lon1 - lon0) * k * s) / 2, oy = (Hh - (lat0 - lat1) * s) / 2;
+  const P = (lon, lat) => [ox + (lon - lon0) * k * s, oy + (lat0 - lat) * s];
+  P.node = n => P(n.lon, n.lat);
+  return P;
+}
+
+// Ícono que recorre un camino (animateMotion)
+function mover(parent, d, sym, size, dur) {
+  const u = S('use', { href: sym, width: size, height: size, x: -size / 2, y: -size / 2 }, parent);
+  const am = S('animateMotion', { dur: dur + 's', repeatCount: 'indefinite', path: d, rotate: sym === '#ico-plane' ? 'auto' : '0' }, u);
+  if (sym === '#ico-plane') u.setAttribute('transform', 'rotate(90)');
+  return u;
+}
+
+// ══════════════════ AMBA ══════════════════
+const Amba = (() => {
+  const card = $('#amba-card');
+  card.innerHTML = `
+    <h3>AMBA · por comuna <span class="class-chip">🚚 solo terrestre</span><span class="class-chip">abono mensual</span></h3>
+    <p class="sub">Tocá una comuna o un partido para mandarle plata desde el <b>Tesoro Central</b>. Si hay abono vigente, el viaje no paga tarifa: se le <b>imputa</b> a la sucursal una parte de la cuota.</p>
+    <div class="map-wrap"><svg class="map-svg" id="amba-map" viewBox="0 0 620 560" role="img" aria-label="Mapa de AMBA con comunas"></svg></div>
+    <div class="map-legend">
+      <span><svg width="18" height="18"><use href="#ico-vault" width="18" height="18"/></svg>Tesoro Central (origen)</span>
+      <span><span class="sw" style="background:var(--navy-2)"></span>sucursal destino</span>
+      <span><svg width="26" height="8"><line x1="0" y1="4" x2="26" y2="4" stroke="#111" stroke-dasharray="3 3"/></svg>rutas posibles</span>
+      <label class="ctrl small" style="margin-left:auto"><input type="checkbox" id="amba-all" checked> ver toda la red</label>
+    </div>
+    <div class="panel-row" style="margin-top:10px" id="amba-ctrls"></div>
+    <div class="readout" id="amba-out"></div>
+    <div class="row" style="margin-top:10px"><button class="btn gold" id="amba-nomove">⏸ ¿Y si no lo muevo?</button><span class="small muted">abre la cadena de Markov con este envío</span></div>`;
+  const svg = $('#amba-map');
+  const P = makeProj(-58.70, -58.20, -34.40, -34.80, 620, 560, 0);
+  const st = { dest: 'c7', M: 120, carrier: 'brinks', abono: { brinks: 1, prosegur: 0 }, usados: { brinks: 12, prosegur: 5 } };
+
+  S('rect', { x: 0, y: 0, width: 620, height: 560, fill: '#fff' }, svg);
+  const [rx, ry] = P(-58.33, -34.50);
+  S('text', { x: rx, y: ry, class: 'water-lbl', text: 'Río de la Plata' }, svg);
+  const ambaPoly = AMBA_POLY.map(([lo, la]) => P(lo, la));
+  const cabaPoly = CABA_POLY.map(([lo, la]) => P(lo, la));
+  const cellsPartidos = voronoi(PARTIDOS.map(P.node), ambaPoly);
+  const cellsComunas = voronoi(COMUNAS.map(P.node), cabaPoly);
+  const gCells = S('g', {}, svg);
+  const cellEl = {};
+  PARTIDOS.forEach((n, i) => { cellEl[n.id] = S('path', { d: polyPath(cellsPartidos[i]), class: 'cell conu' }, gCells); });
+  S('path', { d: polyPath(cabaPoly), fill: 'var(--land)', stroke: '#fff', 'stroke-width': 2 }, gCells);
+  COMUNAS.forEach((n, i) => { cellEl[n.id] = S('path', { d: polyPath(cellsComunas[i]), class: 'cell' }, gCells); });
+  S('path', { d: polyPath(cabaPoly), fill: 'none', stroke: '#6b6272', 'stroke-width': 1.6 }, svg);
+  const gLbl = S('g', {}, svg);
+  const lblEl = {};
+  AMBA_NODES.forEach(n => {
+    const [x, y] = P.node(n);
+    lblEl[n.id] = S('text', { x, y: y + 3.5, 'text-anchor': 'middle', class: 'lbl', 'font-size': n.kind === 'comuna' ? 11 : 9.5, text: n.kind === 'comuna' ? n.num : n.name }, gLbl);
+    cellEl[n.id].addEventListener('click', () => { st.dest = n.id; destSel.value = n.id; update(); });
+    cellEl[n.id].addEventListener('mousemove', e => showTip(e, `<b>${n.name}</b><br>${n.barrio}<br>${nf(haversine(TESORO, n), 1)} km del Tesoro`));
+    cellEl[n.id].addEventListener('mouseleave', hideTip);
+  });
+  const gArcs = S('g', {}, svg);
+  const gMain = S('g', {}, svg);
+  const [ox, oy] = P.node(TESORO);
+  S('use', { href: '#ico-vault', x: ox - 13, y: oy - 13, width: 26, height: 26 }, svg);
+
+  // controles
+  const ctr = $('#amba-ctrls');
+  const lv = {};
+  lv.M = leverBox(ctr, { min: 0, max: 400, value: st.M, step: 5, label: 'Monto', sub: 'a mover', fmt: v => fmtM(v, { d: 0 }), onChange: v => { st.M = v; update(); } });
+  lv.ab = leverBox(ctr, { binary: true, min: 0, max: 1, value: st.abono[st.carrier], label: 'Abono', sub: 'mensual AMBA', ends: ['NO', 'SÍ'], color: '#1f8a4c', knob: '#1f8a4c',
+    fmt: v => v ? 'aplica' : 'no aplica', onChange: v => { st.abono[st.carrier] = v; update(); } });
+  lv.us = leverBox(ctr, { min: 0, max: 50, value: st.usados[st.carrier], label: 'Viajes usados', sub: 'en el mes', fmt: v => `${v} de ${CARRIERS[st.carrier].abono.n}`, onChange: v => { st.usados[st.carrier] = v; update(); } });
+  const col = H('div', { class: 'ctrl-col' }, ctr);
+  H('label', { class: 'l', text: 'Transportadora' }, col);
+  const carSeg = seg(H('div', {}, col), [{ v: 'brinks', label: 'Brinks' }, { v: 'prosegur', label: 'Prosegur' }], st.carrier, v => {
+    st.carrier = v; lv.ab.set(st.abono[v], true); lv.us.set(st.usados[v], true); update();
+  });
+  H('div', { class: 'small muted', html: 'Transp. del Interior no opera en AMBA.' }, col);
+  H('label', { class: 'l', text: 'Destino' }, col);
+  const destSel = H('select', { class: 'btn', style: 'font-weight:500' }, col);
+  destSel.innerHTML = `<optgroup label="CABA">${COMUNAS.map(n => `<option value="${n.id}">${n.name} · ${n.barrio}</option>`).join('')}</optgroup>
+    <optgroup label="Conurbano">${PARTIDOS.map(n => `<option value="${n.id}">${n.name}</option>`).join('')}</optgroup>`;
+  destSel.value = st.dest;
+  destSel.addEventListener('change', () => { st.dest = destSel.value; update(); });
+  $('#amba-all').addEventListener('change', update);
+
+  function drawArcs() {
+    gArcs.innerHTML = ''; gMain.innerHTML = '';
+    const o = P.node(TESORO);
+    if ($('#amba-all').checked) AMBA_NODES.forEach(n => {
+      if (n.id === 'c1') return;
+      S('path', { d: arcPath(o, P.node(n), 0.22).d, class: 'arc-all' }, gArcs);
+    });
+    const dn = NODE[st.dest];
+    if (dn.id === 'c1') return;
+    const a = arcPath(o, P.node(dn), 0.22);
+    S('path', { d: a.d, class: 'arc-main', 'marker-end': 'url(#arrow-head)' }, gMain);
+    mover(gMain, a.d, '#ico-truck', 24, 2.6);
+  }
+
+  function update() {
+    const c = CARRIERS[st.carrier], dn = NODE[st.dest];
+    lv.us.set(st.usados[st.carrier], true);
+    Object.entries(cellEl).forEach(([id, el]) => { el.classList.toggle('sel', id === st.dest); el.classList.toggle('origin', id === 'c1'); });
+    Object.entries(lblEl).forEach(([id, el]) => el.classList.toggle('light', id === st.dest));
+    drawArcs();
+    const km = haversine(TESORO, dn);
+    const restantes = c.abono.n - st.usados[st.carrier];
+    const conAbono = st.abono[st.carrier] && restantes > 0;
+    const tarifa = legTerr(c, TESORO, dn, st.M);
+    const abo = legAbono(c, TESORO, dn);
+    const leg = conAbono ? abo : tarifa;
+    let rows;
+    if (dn.id === 'c1') {
+      $('#amba-out').innerHTML = `<div class="alert ok">El Tesoro está en la Comuna 1: elegí otra comuna o partido.</div>`;
+      Amba.ctx = null; return;
+    }
+    if (conAbono) {
+      rows = `<tr><td>Abono ${c.name}</td><td class="num">${fmtM(c.abono.m)} / mes por ${c.abono.n} viajes</td></tr>
+        <tr><td>Este es el viaje Nº ${st.usados[st.carrier] + 1} de ${c.abono.n}</td><td class="num">quedan ${restantes - 1}</td></tr>
+        <tr><td>Costo imputado = cuota / viajes</td><td class="num">${fmtM(c.abono.m)} / ${c.abono.n}</td></tr>
+        <tr class="total"><td>Se imputa a la sucursal ${dn.name}</td><td class="num">${fmtM(abo.total)}</td></tr>`;
+    } else {
+      rows = `<tr><td>Básico</td><td class="num">${fmtM(tarifa.basico)}</td></tr>
+        <tr><td>Variable = monto × ${nf(c.terr.v * 1e6)} $ por $M·km × ${nf(km, 1)} km</td><td class="num">${fmtM(tarifa.variable)}</td></tr>
+        <tr class="total"><td>Total del viaje</td><td class="num">${fmtM(tarifa.total)}</td></tr>`;
+    }
+    const why = !st.abono[st.carrier] ? 'Sin abono: paga tarifa básico + variable.' :
+      restantes <= 0 ? `⚠ El abono se agotó (${c.abono.n} viajes usados): este viaje paga tarifa completa.` : '';
+    const ocio1 = st.M * G.iDay;
+    const other = CARRIERS[st.carrier === 'brinks' ? 'prosegur' : 'brinks'];
+    const oRest = other.abono.n - st.usados[other.id];
+    const oLeg = st.abono[other.id] && oRest > 0 ? legAbono(other, TESORO, dn) : legTerr(other, TESORO, dn, st.M);
+    $('#amba-out').innerHTML = `
+      <div class="small" style="margin-bottom:6px"><b>Tesoro Central → ${dn.name}</b> <span class="muted">(${dn.barrio})</span> · ${nf(km, 1)} km en línea recta · <span class="pill ${c.cls}">🚚 ${c.name}</span>${conAbono ? ' <span class="pill tdi">con abono</span>' : ''}</div>
+      ${why ? `<div class="alert warn" style="margin:0 0 8px">${why}</div>` : ''}
+      <table class="cost-table"><tbody>${rows}</tbody></table>
+      <div class="small" style="margin-top:8px">Con ${other.name} costaría <b>${fmtM(oLeg.total)}</b>${oLeg.kind === 'abono' ? ' (abono)' : ''}.
+        Dejar ${fmtM(st.M, { d: 0 })} parados <b>un día</b> cuesta ${fmtM(ocio1)} (TNA ${pct(G.tna)}).
+        → Moverlo se paga solo después de <b>${nf(leg.total / Math.max(ocio1, 1e-9), 1)} días</b> de plata quieta.</div>`;
+    Amba.ctx = { source: 'AMBA', from: TESORO, to: dn, M: st.M, cost: leg.total, days: 0, label: `🚚 ${c.name}${conAbono ? ' (abono)' : ''}`, sym: '#ico-truck' };
+  }
+  $('#amba-nomove').addEventListener('click', () => { update(); Markov.open(Amba.ctx); });
+  G.on(update);
+  const api = { ctx: null, update };
+  setTimeout(update);
+  return api;
+})();
+
+// ══════════════════ PROVINCIAS ══════════════════
+const Prov = (() => {
+  const card = $('#prov-card');
+  card.innerHTML = `
+    <h3>Provincias <span class="class-chip">🚚 camión · ✈ avión · combinado</span></h3>
+    <p class="sub">Elegí la sucursal destino, el modo y la transportadora. La tabla de abajo es el <b>camino más corto</b> en costos: todas las rutas posibles ordenadas, con el óptimo de Dijkstra arriba.</p>
+    <div class="prov-grid" style="display:grid;grid-template-columns:minmax(0,0.95fr) minmax(0,1.05fr);gap:14px;align-items:start">
+      <div><svg class="map-svg" id="arg-map" viewBox="0 0 360 700" role="img" aria-label="Mapa de Argentina con sucursales"></svg>
+        <div class="map-legend">
+          <span><svg width="14" height="14"><circle cx="7" cy="7" r="4.5" fill="#24507a"/></svg>sucursal</span>
+          <span><svg width="14" height="14"><circle cx="7" cy="7" r="5.5" fill="none" stroke="#24507a" stroke-width="1.5"/><circle cx="7" cy="7" r="2.5" fill="#24507a"/></svg>con aeropuerto</span>
+          <span><span class="sw" style="background:url(#hatch);background:repeating-linear-gradient(45deg,#e8b4ae 0 2px,transparent 2px 6px)"></span>norte</span>
+        </div>
+      </div>
+      <div class="stack" id="prov-ctrls"></div>
+    </div>
+    <div class="readout" id="prov-out"></div>
+    <div class="row" style="margin-top:10px"><button class="btn gold" id="prov-nomove">⏸ ¿Y si no lo muevo?</button><span class="small muted">abre la cadena de Markov con este envío</span></div>`;
+
+  const svg = $('#arg-map');
+  const P = makeProj(-74, -53, -21.4, -55.3, 360, 700, 8);
+  const st = { dest: 'tucuman', mode: 'aereo', carrier: 'prosegur', air: 'prosegur', ground: 'tdi', M: 300 };
+  S('rect', { x: 0, y: 0, width: 360, height: 700, fill: '#fff' }, svg);
+  const argP = ARG_POLY.map(([a, b]) => P(a, b));
+  S('path', { d: polyPath(argP), fill: 'var(--land)', stroke: '#fff', 'stroke-width': 1.5 }, svg);
+  S('path', { d: polyPath(TDF_POLY.map(([a, b]) => P(a, b))), fill: 'var(--land)' }, svg);
+  S('path', { d: polyPath(MALV_POLY.map(([a, b]) => P(a, b))), fill: 'var(--land)' }, svg);
+  const yN = P(-60, LAT_NORTE)[1];
+  const norte = clipHalf(argP, 0, 1, yN);
+  const norteEl = S('path', { d: polyPath(norte), fill: 'url(#hatch)', stroke: '#c0392b', 'stroke-width': 1, 'stroke-dasharray': '4 3', opacity: .9 }, svg);
+  S('text', { x: P(-53.6, -22.6)[0], y: P(-53.6, -22.6)[1], 'text-anchor': 'end', 'font-size': 11, 'font-weight': 800, fill: '#a33', 'letter-spacing': 2, text: 'NORTE ↙' }, svg);
+  const norteNote = S('text', { x: P(-53.6, -22.6)[0], y: P(-53.6, -22.6)[1] + 13, 'text-anchor': 'end', 'font-size': 9.5, fill: '#a33', text: '' }, svg);
+  const gArcs = S('g', {}, svg), gMain = S('g', {}, svg), gNodes = S('g', {}, svg);
+  const LBL = { rafaela: 'end', cordoba: 'end', tandil: 'end', tucuman: 'end', salta: 'end', jujuy: 'end', resistencia: 'end' };
+  const nodeEl = {};
+  PROV_NODES.forEach(n => {
+    const [x, y] = P.node(n);
+    const g = S('g', { class: 'node-dot', tabindex: 0 }, gNodes);
+    if (n.airport) S('circle', { cx: x, cy: y, r: 7, fill: '#fff', stroke: '#24507a', 'stroke-width': 1.5 }, g);
+    const dot = S('circle', { cx: x, cy: y, r: n.airport ? 3.6 : 4.6, fill: '#24507a' }, g);
+    const anchor = LBL[n.id] || 'start';
+    const t = S('text', { x: x + (anchor === 'end' ? -9 : 9), y: y + (n.id === 'vmaria' ? 9 : 3.5), 'text-anchor': anchor, class: 'lbl', 'font-size': 9.5, text: n.name }, g);
+    const cross = S('text', { x, y: y + 4, 'text-anchor': 'middle', 'font-size': 13, 'font-weight': 800, fill: '#c0392b', text: '✕', opacity: 0 }, g);
+    g.addEventListener('click', () => { st.dest = n.id; destSel.value = n.id; update(); });
+    g.addEventListener('keydown', e => { if (e.key === 'Enter') { st.dest = n.id; destSel.value = n.id; update(); } });
+    g.addEventListener('mousemove', e => showTip(e, `<b>${n.name}</b> (${n.prov})<br>${nf(haversine(TESORO, n))} km del Tesoro en línea recta<br>${n.airport ? '✈ tiene aeropuerto' : 'sin aeropuerto para valores'}`));
+    g.addEventListener('mouseleave', hideTip);
+    nodeEl[n.id] = { g, dot, t, cross };
+  });
+  const [tx, ty] = P.node(TESORO);
+  S('use', { href: '#ico-vault', x: tx - 11, y: ty - 11, width: 22, height: 22 }, svg);
+  S('text', { x: tx + 13, y: ty + 4, class: 'lbl', 'font-size': 10, text: 'Tesoro (CABA)' }, svg);
+
+  // controles
+  const ctr = $('#prov-ctrls');
+  H('label', { class: 'l', text: 'Sucursal destino', style: 'font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em' }, ctr);
+  const destSel = H('select', { class: 'btn', style: 'font-weight:500' }, ctr);
+  const REG = { centro: 'Centro', cuyo: 'Cuyo', pba: 'Provincia de Buenos Aires', patagonia: 'Patagonia', noa: 'Norte · NOA', nea: 'Norte · NEA' };
+  destSel.innerHTML = Object.entries(REG).map(([r, lbl]) => `<optgroup label="${lbl}">${PROV_NODES.filter(n => n.region === r).map(n => `<option value="${n.id}">${n.name} (${n.prov})</option>`).join('')}</optgroup>`).join('');
+  destSel.value = st.dest;
+  destSel.addEventListener('change', () => { st.dest = destSel.value; update(); });
+  const lab = t => H('label', { text: t, style: 'font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em' }, ctr);
+  lab('Modo');
+  const modeSeg = seg(H('div', {}, ctr), [{ v: 'terrestre', label: '🚚 Terrestre' }, { v: 'aereo', label: '✈ Aéreo' }, { v: 'combinado', label: '✈+🚚 Combinado' }], st.mode, v => { st.mode = v; update(); });
+  const carWrap = H('div', { class: 'stack', style: 'gap:6px' }, ctr);
+  const singleWrap = H('div', {}, carWrap);
+  H('label', { text: 'Transportadora', style: 'font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;display:block;margin-bottom:4px' }, singleWrap);
+  const carSeg = seg(H('div', {}, singleWrap), CARRIER_LIST.map(c => ({ v: c.id, label: c.name })), st.carrier, v => { st.carrier = v; update(); });
+  const comboWrap = H('div', { class: 'stack', style: 'gap:6px' }, carWrap);
+  H('label', { text: 'Tramo aéreo', style: 'font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em' }, comboWrap);
+  const airSeg = seg(H('div', {}, comboWrap), [{ v: 'brinks', label: '✈ Brinks' }, { v: 'prosegur', label: '✈ Prosegur' }], st.air, v => { st.air = v; update(); });
+  H('label', { text: 'Último tramo por tierra', style: 'font-size:.8rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em' }, comboWrap);
+  const groundSeg = seg(H('div', {}, comboWrap), CARRIER_LIST.map(c => ({ v: c.id, label: '🚚 ' + c.name })), st.ground, v => { st.ground = v; update(); });
+  const blurb = H('div', { class: 'small muted' }, ctr);
+  lab('Denominación del billete');
+  const denSeg = seg(H('div', {}, ctr), [1000, 2000, 10000, 20000].map(v => ({ v, label: '$' + nf(v) })), G.denom, v => { G.denom = v; G.emit(); });
+  const lvRow = H('div', { class: 'panel-row', style: 'align-items:center' }, ctr);
+  const lvM = leverBox(lvRow, { min: 0, max: 800, step: 10, value: st.M, label: 'Monto', sub: 'a mover', fmt: v => fmtM(v, { d: 0 }), onChange: v => { st.M = v; update(); } });
+  const octoInfo = H('div', { class: 'small', style: 'flex:1;min-width:140px' }, lvRow);
+
+  function hubFor(dest) {
+    return PROV_NODES.filter(h => h.airport && h.id !== dest.id).sort((a, b) => haversine(a, dest) - haversine(b, dest))[0];
+  }
+  // Opción elegida por el usuario (puede ser inviable)
+  function chosen() {
+    const d = NODE[st.dest], M = st.M;
+    if (st.mode === 'terrestre') {
+      const c = CARRIERS[st.carrier];
+      if (!c.covers(TESORO)) return { err: `${c.name} no sale de Buenos Aires: solo opera dentro del NOA. Probá un combinado (avión hasta el norte + ${c.name}).` };
+      if (!c.covers(d)) return { err: `${c.name} no llega a ${d.name}. Cobertura: ${c.blurb}` };
+      return { legs: [legTerr(c, TESORO, d, M)] };
+    }
+    if (st.mode === 'aereo') {
+      const c = CARRIERS[st.carrier];
+      if (!c.air) return { err: `${c.name} no tiene servicio aéreo.` };
+      if (!d.airport) return { err: `${d.name} no tiene aeropuerto habilitado para valores: hace falta un combinado (avión + camión).` };
+      if (!c.covers(d)) return { err: `${c.name} no vuela al norte: no cubre ${d.name}.` };
+      return { legs: [legAir(c, TESORO, d, M)] };
+    }
+    const h = hubFor(d), ca = CARRIERS[st.air], cg = CARRIERS[st.ground];
+    if (!ca.covers(h)) return { err: `${ca.name} no vuela a ${h.name} (norte). Elegí Prosegur para el tramo aéreo.` };
+    if (!(cg.covers(h) && cg.covers(d))) return { err: `${cg.name} no hace el tramo ${h.name} → ${d.name}.` };
+    return { legs: [legAir(ca, TESORO, h, M), legTerr(cg, h, d, M)] };
+  }
+  const sig = legs => legs.map(l => l.kind + l.carrier.id + l.to.id).join('|');
+
+  function drawRoute(legs) {
+    gMain.innerHTML = '';
+    legs.forEach(l => {
+      const a = P.node(l.from), b = P.node(l.to);
+      const arc = arcPath(a, b, l.kind === 'air' ? 0.28 : 0.06);
+      S('path', { d: arc.d, class: 'arc-main', 'marker-end': 'url(#arrow-head)', style: l.kind === 'air' ? '' : 'stroke-dasharray:2 4;stroke-width:2.6' }, gMain);
+      mover(gMain, arc.d, l.kind === 'air' ? '#ico-plane' : '#ico-truck', l.kind === 'air' ? 20 : 18, l.kind === 'air' ? 2.2 : 3.2);
+    });
+  }
+
+  function update() {
+    const d = NODE[st.dest];
+    modeSeg.set(st.mode); denSeg.set(G.denom);
+    singleWrap.style.display = st.mode === 'combinado' ? 'none' : '';
+    comboWrap.style.display = st.mode === 'combinado' ? '' : 'none';
+    carSeg.disable('tdi', st.mode === 'aereo', 'sin aviones');
+    // cobertura en el mapa
+    const cov = st.mode === 'combinado' ? CARRIERS[st.ground] : CARRIERS[st.carrier];
+    PROV_NODES.forEach(n => {
+      const ok = cov.covers(n);
+      nodeEl[n.id].g.setAttribute('opacity', ok ? 1 : 0.45);
+      nodeEl[n.id].cross.setAttribute('opacity', ok ? 0 : 1);
+      nodeEl[n.id].dot.setAttribute('fill', n.id === st.dest ? '#c99a2e' : '#24507a');
+      nodeEl[n.id].dot.setAttribute('r', n.id === st.dest ? 6 : n.airport ? 3.6 : 4.6);
+    });
+    norteNote.textContent = cov.id === 'brinks' ? 'Brinks no llega' : cov.id === 'tdi' ? 'Transp. del Interior: solo acá' : '';
+    norteEl.setAttribute('opacity', cov.id === 'prosegur' ? .35 : .95);
+    blurb.innerHTML = `<b>${cov.name}:</b> ${cov.blurb}`;
+    gArcs.innerHTML = '';
+    PROV_NODES.forEach(n => S('path', { d: arcPath(P.node(TESORO), P.node(n), 0.18).d, class: 'arc-all' }, gArcs));
+    const oc = octopacks(st.M);
+    octoInfo.innerHTML = `${nf(oc)} octopack${oc === 1 ? '' : 's'} de ${fmtM(octoValue(), { d: 0 })}<div class="octos">${Array.from({ length: Math.min(oc, 40) }, (_, i) => `<span class="octo${i >= 3 ? ' extra' : ''}" title="${i >= 3 ? 'excede la franquicia aérea' : 'incluido'}"></span>`).join('')}${oc > 40 ? ' …' : ''}</div><span class="muted">en rojo: exceden la franquicia del avión (3)</span>`;
+
+    const ch = chosen();
+    const arcs = buildGraph(TESORO, d, st.M);
+    const opts = enumeratePaths(arcs);
+    const best = dijkstra(arcs, 'O', 'D');
+    const legs = ch.legs || (best ? best.legs : []);
+    drawRoute(legs);
+
+    let html = `<div class="small" style="margin-bottom:6px"><b>Tesoro Central → ${d.name}</b> · ${nf(haversine(TESORO, d))} km en línea recta · monto ${fmtM(st.M, { d: 0 })} · ${oc} octopacks</div>`;
+    if (ch.err) html += `<div class="alert bad" style="margin:0 0 8px">✖ ${ch.err}${best ? ' Te muestro la ruta óptima.' : ''}</div>`;
+    if (legs.length) {
+      html += `<table class="cost-table"><thead><tr><th>Tramo</th><th class="num">Básico</th><th class="num">Variable</th><th class="num">Sobrecargo</th><th class="num">Total</th></tr></thead><tbody>`;
+      legs.forEach(l => {
+        const varTxt = l.kind === 'air' ? `${nf(l.carrier.air.v * 100, 2)}% × monto` : `monto × ${nf(l.carrier.terr.v * 1e6)} $/$M·km × ${nf(l.km)} km`;
+        const sob = l.kind === 'air' ? (l.extra ? `${l.extra} octo × ${fmtM(l.carrier.air.s)}` : 'dentro de franquicia') : '—';
+        html += `<tr><td>${legDesc(l)}<br><span class="muted small">${l.from.name} → ${l.to.name}</span></td><td class="num">${fmtM(l.basico)}</td>
+          <td class="num">${fmtM(l.variable)}<br><span class="muted small">${varTxt}</span></td><td class="num">${l.kind === 'air' ? fmtM(l.sobre) : '—'}<br><span class="muted small">${sob}</span></td><td class="num">${fmtM(l.total)}</td></tr>`;
+      });
+      const tot = legs.reduce((s, l) => s + l.total, 0), days = legs.reduce((s, l) => s + l.days, 0);
+      html += `<tr class="total"><td colspan="4">Costo de mover ${ch.err ? '(ruta óptima)' : '(tu elección)'} · llega en ${days} día${days === 1 ? '' : 's'}</td><td class="num">${fmtM(tot)}</td></tr></tbody></table>`;
+      const ocio1 = st.M * G.iDay;
+      html += `<div class="small" style="margin-top:6px">Dejar ${fmtM(st.M, { d: 0 })} quietos cuesta ${fmtM(ocio1)} por día → moverlo conviene si la plata va a estar parada más de <b>${nf(tot / Math.max(ocio1, 1e-9), 1)} días</b>.</div>`;
+      Prov.ctx = { source: 'Provincias', from: TESORO, to: d, M: st.M, cost: tot, days, label: legs.map(legDesc).join(' + '), sym: legs[0].kind === 'air' ? '#ico-plane' : '#ico-truck' };
+    }
+    // ranking de rutas
+    const cur = legs.length ? sig(legs) : '';
+    html += `<h3 style="margin-top:14px;font-size:1rem">Todas las rutas posibles <span class="class-chip">Clase 19 · Dijkstra</span></h3>
+      <table class="cost-table" style="margin-top:6px"><thead><tr><th>Ruta</th><th>Modo</th><th class="num">Días</th><th class="num">Costo</th></tr></thead><tbody>`;
+    opts.slice(0, 8).forEach((o, i) => {
+      const s = sig(o.legs);
+      html += `<tr class="clickable ${i === 0 ? 'best' : ''} ${s === cur ? 'cur' : ''}" data-i="${i}"><td>${o.legs.map(l => `${legDesc(l)} <span class="muted">→ ${l.to.name}</span>`).join('<br>')}</td>
+        <td>${MODE_LABEL[o.mode]}</td><td class="num">${o.days}</td><td class="num">${fmtM(o.total)}${i === 0 ? ' ★' : ''}</td></tr>`;
+    });
+    html += `</tbody></table><div class="small muted" style="margin-top:4px">★ óptimo = camino más corto (Dijkstra) en el grafo Tesoro → aeropuertos → sucursal, con el costo de cada tramo como “distancia”. Tocá una fila para elegirla.</div>`;
+    $('#prov-out').innerHTML = html;
+    $$('#prov-out tr.clickable').forEach(tr => tr.addEventListener('click', () => {
+      const o = opts[+tr.dataset.i];
+      st.mode = o.mode;
+      if (o.mode === 'combinado') { st.air = o.legs[0].carrier.id; st.ground = o.legs[1].carrier.id; airSeg.set(st.air); groundSeg.set(st.ground); }
+      else { st.carrier = o.legs[0].carrier.id; carSeg.set(st.carrier); }
+      update();
+    }));
+  }
+  $('#prov-nomove').addEventListener('click', () => { update(); Markov.open(Prov.ctx); });
+  G.on(update);
+  setTimeout(update);
+  return { ctx: null, update, st };
+})();
+// ══════════════════════════════════════════════════════════════════
+//  “¿Y SI NO LO MUEVO?” · cadena de Markov con costo ocioso vs. costo de mover
+// ══════════════════════════════════════════════════════════════════
+const Markov = (() => {
+  const panel = $('#markov-panel');
+  const st = { p: 1, n: 10, ctx: null };
+  const COL = { B: '#c0392b', T: '#d08a00', D: '#1b9e6e' };
+
+  panel.innerHTML = `
+    <div class="row" style="justify-content:space-between">
+      <h3>¿Y si no lo muevo? La plata como cadena de Markov <span class="class-chip">Repaso clases 3–5 · Markov</span></h3>
+      <button class="btn" id="mk-close">✕ cerrar</button>
+    </div>
+    <p class="sub" id="mk-ctx"></p>
+    <div class="grid-2" style="margin-top:10px">
+      <div class="stack">
+        <svg id="mk-graph" viewBox="0 0 640 300" style="width:100%;height:auto;display:block" role="img" aria-label="Cadena de Markov bóveda, tránsito y destino"></svg>
+        <div class="row">
+          <span class="seg" id="mk-presets">
+            <button aria-pressed="true" data-p="1">⏸ No lo muevo (p = 1)</button><button aria-pressed="false" data-p="0">🚚 Lo muevo hoy (p = 0)</button><button aria-pressed="false" data-p="0.8">🤔 Indeciso (p = 0,8)</button>
+          </span>
+        </div>
+        <div class="field"><label for="mk-p">p = probabilidad de que la plata <b>siga parada</b> cada día</label><output id="mk-p-out"></output><input type="range" id="mk-p" min="0" max="1" step="0.01"></div>
+        <div class="field"><label for="mk-n">Horizonte de análisis (días)</label><output id="mk-n-out"></output><input type="range" id="mk-n" min="1" max="30" step="1"></div>
+        <div class="row" style="gap:18px;align-items:flex-start">
+          <div><div class="small muted" style="margin-bottom:4px">Matriz de transición diaria <b>P</b></div><table class="matrix" id="mk-matrix"></table></div>
+          <div><div class="small muted" style="margin-bottom:4px">Estado al día n: <b>π<sub>n</sub> = π<sub>0</sub>·P<sup>n</sup></b></div><table class="matrix" id="mk-pi"></table></div>
+        </div>
+      </div>
+      <div class="stack">
+        <div class="grid-2" style="gap:10px">
+          <div class="scen stay"><div class="small muted">Se queda en la bóveda <b id="mk-n2"></b> días</div><div class="big" id="mk-stay"></div><div class="small" id="mk-stay-f"></div></div>
+          <div class="scen move"><div class="small muted">Se mueve hoy</div><div class="big" id="mk-move"></div><div class="small" id="mk-move-f"></div></div>
+        </div>
+        <div class="scen" style="border-left:5px solid var(--navy-2)"><div class="small muted">Costo esperado con la cadena (p elegido)</div><div class="big" id="mk-exp"></div><div class="small" id="mk-exp-f"></div></div>
+        <div id="mk-verdict"></div>
+        <svg id="mk-chart" viewBox="0 0 640 300" style="width:100%;height:auto;display:block" role="img" aria-label="Costo acumulado por día"></svg>
+      </div>
+    </div>`;
+
+  const g = $('#mk-graph');
+  $('#mk-close').addEventListener('click', () => { panel.hidden = true; });
+  $$('#mk-presets button').forEach(b => b.addEventListener('click', () => { st.p = +b.dataset.p; render(); }));
+  const pIn = $('#mk-p'), nIn = $('#mk-n');
+  pIn.addEventListener('input', () => { st.p = +pIn.value; render(); });
+  nIn.addEventListener('input', () => { st.n = +nIn.value; render(); });
+
+  function chain(ctx) {
+    const dT = ctx.days;
+    const q = dT >= 2 ? 1 - 1 / dT : 0;
+    const p = st.p;
+    const P = [[p, 1 - p, 0], [0, q, 1 - q], [0, 0, 1]];
+    return { P, q, dT };
+  }
+  function simulate(ctx) {
+    const { P, dT } = chain(ctx);
+    const idle = ctx.M * G.iDay, idleT = dT >= 1 ? idle : 0;
+    let pi = [1, 0, 0];
+    const rows = [{ t: 0, pi: pi.slice(), cum: 0 }];
+    let cum = 0;
+    for (let t = 1; t <= st.n; t++) {
+      const moveProb = pi[0] * P[0][1];
+      const nxt = [0, 1, 2].map(j => pi[0] * P[0][j] + pi[1] * P[1][j] + pi[2] * P[2][j]);
+      cum += moveProb * ctx.cost + nxt[0] * idle + nxt[1] * idleT;
+      pi = nxt;
+      rows.push({ t, pi: pi.slice(), cum });
+    }
+    return rows;
+  }
+
+  function drawGraph(ctx) {
+    g.innerHTML = '';
+    const { P, q, dT } = chain(ctx);
+    const N = { B: [105, 172], T: [320, 172], D: [535, 172] };
+    const R = 54;
+    const edge = (a, b, lbl, w, color) => {
+      const [x1, y1] = N[a], [x2, y2] = N[b];
+      S('path', { d: `M${x1 + R + 4},${y1} L${x2 - R - 10},${y2}`, stroke: color, 'stroke-width': 1.5 + 5 * w, fill: 'none', 'marker-end': 'url(#arrow-head-navy)', opacity: w > 0 ? 1 : .25 }, g);
+      S('rect', { x: (x1 + x2) / 2 - 34, y: y1 - 30, width: 68, height: 20, rx: 10, fill: '#fff', stroke: '#d6d3cb' }, g);
+      S('text', { x: (x1 + x2) / 2, y: y1 - 16, 'text-anchor': 'middle', 'font-size': 12.5, 'font-weight': 800, fill: '#1f2430', text: lbl }, g);
+    };
+    const loop = (k, lbl, w, color) => {
+      const [x, y] = N[k];
+      S('path', { d: `M${x - 22},${y - R + 4} C${x - 50},${y - R - 70} ${x + 50},${y - R - 70} ${x + 22},${y - R + 4}`, stroke: color, 'stroke-width': 1.5 + 5 * w, fill: 'none', 'marker-end': 'url(#arrow-head-navy)', opacity: w > 0 ? 1 : .25 }, g);
+      S('text', { x, y: y - R - 60, 'text-anchor': 'middle', 'font-size': 12.5, 'font-weight': 800, fill: '#1f2430', text: lbl }, g);
+    };
+    loop('B', `p = ${nf(P[0][0], 2)}`, P[0][0], COL.B);
+    loop('T', `q = ${nf(q, 2)}`, q, COL.T);
+    loop('D', '1', 1, COL.D);
+    edge('B', 'T', `1−p = ${nf(P[0][1], 2)}`, P[0][1], '#24507a');
+    edge('T', 'D', `1−q = ${nf(P[1][2], 2)}`, P[1][2], '#24507a');
+    const node = (k, sym, title, sub, color) => {
+      const [x, y] = N[k];
+      S('circle', { cx: x, cy: y, r: R, fill: '#fff', stroke: color, 'stroke-width': 4 }, g);
+      S('use', { href: sym, x: x - 30, y: y - 32, width: 60, height: 60 }, g);
+      S('text', { x, y: y + R + 20, 'text-anchor': 'middle', 'font-size': 13.5, 'font-weight': 800, fill: '#1f2430', text: title }, g);
+      S('text', { x, y: y + R + 37, 'text-anchor': 'middle', 'font-size': 11.5, fill: '#5b6070', text: sub }, g);
+    };
+    node('B', '#ico-vault', 'Bóveda', `plata parada: ${fmtM(ctx.M * G.iDay)}/día`, COL.B);
+    node('T', ctx.sym, 'En tránsito', dT >= 1 ? `${dT} día${dT > 1 ? 's' : ''} · costo mover ${fmtM(ctx.cost)}` : `mismo día · costo ${fmtM(ctx.cost)}`, COL.T);
+    node('D', '#ico-bank', 'Sucursal destino', 'plata trabajando: $0 ocioso', COL.D);
+  }
+
+  function drawChart(ctx, rows) {
+    const c = $('#mk-chart');
+    c.innerHTML = '';
+    const W = 640, Hh = 300, L = 70, Rr = 16, T = 16, B = 96;
+    const idle = ctx.M * G.iDay;
+    const moveCost = t => ctx.cost + Math.min(t, ctx.days) * idle;
+    const stay = t => t * idle;
+    const ymax = Math.max(stay(st.n), moveCost(st.n), rows[rows.length - 1].cum) * 1.12 || 1;
+    const X = t => L + (W - L - Rr) * t / st.n, Y = v => T + (Hh - T - B) * (1 - v / ymax);
+    for (let k = 0; k <= 4; k++) {
+      const v = ymax * k / 4;
+      S('line', { x1: L, x2: W - Rr, y1: Y(v), y2: Y(v), stroke: '#eceae4' }, c);
+      S('text', { x: L - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 11, fill: '#6f7482', text: fmtM(v) }, c);
+    }
+    const ticks = st.n <= 15 ? 1 : 5;
+    for (let t = 0; t <= st.n; t += ticks) S('text', { x: X(t), y: Hh - B + 16, 'text-anchor': 'middle', 'font-size': 11, fill: '#6f7482', text: t }, c);
+    S('text', { x: W - Rr, y: Hh - B + 30, 'text-anchor': 'end', 'font-size': 11, fill: '#6f7482', text: 'días' }, c);
+    const dstar = ctx.cost / Math.max(idle, 1e-12) + ctx.days;
+    if (dstar <= st.n) {
+      S('line', { x1: X(dstar), x2: X(dstar), y1: T, y2: Hh - B, stroke: '#16324f', 'stroke-dasharray': '4 4' }, c);
+      S('text', { x: X(dstar) + 4, y: T + 12, 'font-size': 11, 'font-weight': 700, fill: '#16324f', text: `equilibrio ≈ día ${nf(dstar, 1)}` }, c);
+    }
+    const line = (fn, color, dash, label) => {
+      const pts = [];
+      for (let t = 0; t <= st.n; t += 0.25) pts.push([X(t), Y(fn(t))]);
+      S('path', { d: 'M' + pts.map(p => p.map(v => v.toFixed(1)).join(',')).join('L'), fill: 'none', stroke: color, 'stroke-width': 2.4, 'stroke-dasharray': dash || '' }, c);
+      const [lx, ly] = pts[pts.length - 1];
+      return { lx, ly, label, color };
+    };
+    const labs = [
+      line(stay, COL.B, '', 'se queda'),
+      line(moveCost, COL.D, '', 'se mueve hoy'),
+    ];
+    S('path', { d: 'M' + rows.map(r => `${X(r.t).toFixed(1)},${Y(r.cum).toFixed(1)}`).join('L'), fill: 'none', stroke: '#24507a', 'stroke-width': 2.4, 'stroke-dasharray': '6 4' }, c);
+    rows.forEach(r => S('circle', { cx: X(r.t), cy: Y(r.cum), r: 3, fill: '#24507a' }, c));
+    labs.push({ lx: X(st.n), ly: Y(rows[rows.length - 1].cum), label: `esperado (p=${nf(st.p, 2)})`, color: '#24507a' });
+    labs.sort((a, b) => a.ly - b.ly);
+    let lastY = -99;
+    labs.forEach(l => { const y = Math.max(l.ly, lastY + 13); lastY = y; S('text', { x: l.lx - 4, y: y - 5, 'text-anchor': 'end', 'font-size': 11.5, 'font-weight': 700, fill: l.color, text: l.label }, c); });
+    // franja de estados π_t
+    const sy = Hh - B + 42, sh = 30, bw = (W - L - Rr) / (st.n + 1);
+    S('text', { x: L - 6, y: sy + 19, 'text-anchor': 'end', 'font-size': 11, fill: '#6f7482', text: 'π(t)' }, c);
+    rows.forEach(r => {
+      let y0 = sy;
+      ['B', 'T', 'D'].forEach((k, j) => {
+        const h = sh * r.pi[j];
+        if (h > 0.2) S('rect', { x: L + r.t * bw + 1, y: y0, width: Math.max(1, bw - 2), height: h, fill: COL[k], rx: 1.5 }, c);
+        y0 += h;
+      });
+    });
+    const lg = [['B', 'Bóveda'], ['T', 'Tránsito'], ['D', 'Destino']];
+    lg.forEach(([k, name], i) => { S('rect', { x: L + i * 110, y: Hh - 16, width: 11, height: 11, rx: 2, fill: COL[k] }, c); S('text', { x: L + i * 110 + 16, y: Hh - 6.5, 'font-size': 11.5, fill: '#454a57', text: name }, c); });
+  }
+
+  function render() {
+    const ctx = st.ctx;
+    if (!ctx) return;
+    pIn.value = st.p; nIn.value = st.n;
+    $('#mk-p-out').textContent = nf(st.p, 2);
+    $('#mk-n-out').textContent = st.n + ' días';
+    $$('#mk-presets button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.p === st.p)));
+    $('#mk-ctx').innerHTML = `Envío analizado (${ctx.source}): <b>${fmtM(ctx.M, { d: 0 })}</b> del ${ctx.from.name} a <b>${ctx.to.name}</b> por ${ctx.label}. Costo de moverlo: <b>${fmtM(ctx.cost)}</b>. Costo ocioso = monto × TNA/365 × días = ${fmtM(ctx.M, { d: 0 })} × ${pct(G.tna)}/365 = <b>${fmtM(ctx.M * G.iDay)} por día</b>.`;
+    const { P } = chain(ctx);
+    const names = ['Bóveda', 'Tránsito', 'Destino'];
+    $('#mk-matrix').innerHTML = `<tr><th></th>${names.map(n => `<th>${n}</th>`).join('')}</tr>` +
+      P.map((r, i) => `<tr><th>${names[i]}</th>${r.map(v => `<td class="${v > 0 && v < 1 ? 'hi' : ''}">${nf(v, 2)}</td>`).join('')}</tr>`).join('');
+    const rows = simulate(ctx);
+    const piN = rows[rows.length - 1].pi;
+    $('#mk-pi').innerHTML = `<tr>${names.map(n => `<th>${n}</th>`).join('')}</tr><tr>${piN.map(v => `<td>${nf(v, 3)}</td>`).join('')}</tr>`;
+    const idle = ctx.M * G.iDay;
+    $('#mk-n2').textContent = st.n;
+    $('#mk-stay').textContent = fmtM(st.n * idle);
+    $('#mk-stay-f').innerHTML = `${fmtM(ctx.M, { d: 0 })} × ${pct(G.tna)}/365 × ${st.n} días<br><span class="muted">y al día ${st.n} la plata sigue ahí: el problema no desaparece</span>`;
+    const mv = ctx.cost + ctx.days * idle;
+    $('#mk-move').textContent = fmtM(mv);
+    $('#mk-move-f').innerHTML = `${fmtM(ctx.cost)} de transporte${ctx.days ? ` + ${ctx.days} día${ctx.days > 1 ? 's' : ''} de tránsito ocioso (${fmtM(ctx.days * idle)})` : ''}`;
+    const exp = rows[rows.length - 1].cum;
+    $('#mk-exp').textContent = fmtM(exp);
+    const expDays = st.p < 1 ? 1 / (1 - st.p) : Infinity;
+    $('#mk-exp-f').innerHTML = `Días esperados parada en bóveda = 1/(1−p) = ${isFinite(expDays) ? nf(expDays, 1) : '∞'} · prob. de seguir en bóveda al día ${st.n}: ${nf(piN[0], 3)}`;
+    const dstar = ctx.cost / Math.max(idle, 1e-12);
+    const better = st.n * idle > mv;
+    $('#mk-verdict').innerHTML = `<div class="alert ${better ? 'warn' : 'ok'}">${better
+      ? `⚠ En ${st.n} días, tenerla quieta (${fmtM(st.n * idle)}) cuesta más que moverla (${fmtM(mv)}). Equilibrio: <b>d* = costo de mover / (monto × TNA/365) ≈ ${nf(dstar, 1)} días</b>.`
+      : `✔ En ${st.n} días todavía conviene esperar: quieta cuesta ${fmtM(st.n * idle)} y moverla ${fmtM(mv)}. Recién después de <b>d* ≈ ${nf(dstar, 1)} días</b> conviene moverla.`}</div>`;
+    drawGraph(ctx);
+    drawChart(ctx, rows);
+  }
+
+  function open(ctx) {
+    if (!ctx) return;
+    st.ctx = ctx;
+    panel.hidden = false;
+    render();
+    panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  G.on(() => { if (!panel.hidden) render(); });
+  return { open, render };
+})();
+// ══════════════════════════════════════════════════════════════════
+//  SOLAPA 2 · GRÁFICO DE PROYECCIÓN (montos tapados) + SIMULADOR
+// ══════════════════════════════════════════════════════════════════
+function businessDays(a, b) {
+  const out = [];
+  const d = new Date(a + 'T12:00:00'), e = new Date(b + 'T12:00:00');
+  while (d <= e) { if (d.getDay() % 6 !== 0) out.push(new Date(d)); d.setDate(d.getDate() + 1); }
+  return out;
+}
+const DIAS = ['dom', 'lun', 'mar', 'mié', 'jue', 'vie', 'sáb'];
+const fmtD = d => `${DIAS[d.getDay()]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+const isoD = d => d.toISOString().slice(0, 10);
+
+const TRAIN_DATES = businessDays(DATA.trainStart, DATA.trainEnd);
+const VAL_DATES = businessDays(DATA.valStart, DATA.valEnd);
+
+// ── Gráfico estilo matplotlib, con montos tapados ──────────────────
+const Fcst = (() => {
+  const svg = $('#fcst');
+  const C = { blue: '#1f77b4', orange: '#ff7f0e', green: '#2ca02c', red: '#d62728', band: '#d62728', grid: '#e6e6e6', ax: '#222' };
+  const TOP = { x0: 92, x1: 985, y0: 40, y1: 350 };
+  const BOT = { x0: 92, x1: 985, y0: 430, y1: 640 };
+  const redactBar = (x, y, w, h = 10, parent = svg) => S('rect', { x, y, width: w, height: h, rx: 2, class: 'redact' }, parent);
+  const t0 = new Date('2025-08-25T12:00:00').getTime(), t1 = new Date('2026-10-19T12:00:00').getTime();
+  const XT = d => TOP.x0 + (TOP.x1 - TOP.x0) * (d.getTime() - t0) / (t1 - t0);
+  const ymaxT = Math.max(...DATA.trainReal) * 1.06;
+  const YT = v => TOP.y1 - (TOP.y1 - TOP.y0) * v / ymaxT;
+  const vb0 = VAL_DATES[0].getTime() - 0.9 * 864e5, vb1 = VAL_DATES[VAL_DATES.length - 1].getTime() + 0.9 * 864e5;
+  const XB = d => BOT.x0 + (BOT.x1 - BOT.x0) * (d.getTime() - vb0) / (vb1 - vb0);
+  const ymaxB = Math.max(...DATA.valHi) * 1.06;
+  const YB = v => BOT.y1 - (BOT.y1 - BOT.y0) * v / ymaxB;
+  const pathOf = (xs, ys) => 'M' + xs.map((x, i) => ys[i] == null ? null : `${x.toFixed(1)},${ys[i].toFixed(1)}`).filter(Boolean).join('L');
+  const overlay = S('g', {}, null);
+
+  function axesBox(b) {
+    S('rect', { x: b.x0, y: b.y0, width: b.x1 - b.x0, height: b.y1 - b.y0, fill: '#fff', stroke: C.ax, 'stroke-width': 1 }, svg);
+  }
+  function draw() {
+    svg.innerHTML = '';
+    S('rect', { x: 0, y: 0, width: 1000, height: 700, fill: '#fff' }, svg);
+    // ── título superior ──
+    const tt = S('text', { x: 538, y: 24, 'text-anchor': 'middle', 'font-size': 14, 'font-weight': 700, fill: '#111' }, svg);
+    tt.innerHTML = 'Sucursal X  Transformer cuantílico  |  train MAE = <tspan class="redact">██████████</tspan>   val MAE = <tspan class="redact">█████████</tspan>';
+    axesBox(TOP);
+    // grilla y ticks Y (montos tapados)
+    const step = ymaxT / 7.2;
+    for (let k = 0; k * step <= ymaxT; k++) {
+      const y = YT(k * step);
+      S('line', { x1: TOP.x0, x2: TOP.x1, y1: y, y2: y, stroke: C.grid }, svg);
+      S('line', { x1: TOP.x0 - 4, x2: TOP.x0, y1: y, y2: y, stroke: C.ax }, svg);
+      redactBar(TOP.x0 - 8 - (k === 0 ? 9 : 70), y - 4, k === 0 ? 9 : 70, 8);
+    }
+    ['2025-09', '2025-11', '2026-01', '2026-03', '2026-05', '2026-07', '2026-09'].forEach(m => {
+      const x = XT(new Date(m + '-01T12:00:00'));
+      S('line', { x1: x, x2: x, y1: TOP.y0, y2: TOP.y1, stroke: C.grid }, svg);
+      S('line', { x1: x, x2: x, y1: TOP.y1, y2: TOP.y1 + 4, stroke: C.ax }, svg);
+      S('text', { x, y: TOP.y1 + 18, 'text-anchor': 'middle', 'font-size': 12, fill: '#222', text: m }, svg);
+    });
+    S('rect', { x: TOP.x0, y: TOP.y0, width: TOP.x1 - TOP.x0, height: TOP.y1 - TOP.y0, fill: 'none', stroke: C.ax }, svg);
+    const xsT = TRAIN_DATES.map(XT), xsV = VAL_DATES.map(XT);
+    S('path', { d: pathOf(xsT, DATA.trainReal.map(YT)), fill: 'none', stroke: C.blue, 'stroke-width': 1.25 }, svg);
+    S('path', { d: pathOf(xsT, DATA.trainPred.map(v => v == null ? null : YT(v))), fill: 'none', stroke: C.orange, 'stroke-width': 1.6, 'stroke-dasharray': '5 3' }, svg);
+    S('path', { d: pathOf([XT(TRAIN_DATES[TRAIN_DATES.length - 1]), ...xsV], [YT(DATA.trainReal[DATA.trainReal.length - 1]), ...DATA.valReal.map(YT)]), fill: 'none', stroke: C.green, 'stroke-width': 2.2 }, svg);
+    S('path', { d: pathOf(xsV, DATA.valPred.map(YT)), fill: 'none', stroke: C.red, 'stroke-width': 2.4, 'stroke-dasharray': '6 3' }, svg);
+    const xc = XT(VAL_DATES[0]);
+    S('line', { x1: xc, x2: xc, y1: TOP.y0, y2: TOP.y1, stroke: '#888', 'stroke-width': 1.5, 'stroke-dasharray': '2 3' }, svg);
+    // leyenda superior izquierda
+    const lg = S('g', { transform: `translate(${TOP.x0 + 8},${TOP.y0 + 8})` }, svg);
+    S('rect', { x: 0, y: 0, width: 168, height: 92, rx: 3, fill: '#fff', stroke: '#ccc' }, lg);
+    [['Real (train)', C.blue, '', 1.3], ['Predicción (train)', C.orange, '5 3', 1.6], ['Real (validación)', C.green, '', 2.2], ['Predicción (validación)', C.red, '6 3', 2.4], ['Corte train/val', '#888', '2 3', 1.5]]
+      .forEach(([t, c, d, w], i) => { S('line', { x1: 8, x2: 30, y1: 12 + i * 17, y2: 12 + i * 17, stroke: c, 'stroke-width': w, 'stroke-dasharray': d }, lg); S('text', { x: 38, y: 16 + i * 17, 'font-size': 11, fill: '#222', text: t }, lg); });
+
+    // ── zoom de validación (la proyección) ──
+    const bt = S('text', { x: 538, y: 420, 'text-anchor': 'middle', 'font-size': 13, fill: '#111' }, svg);
+    bt.innerHTML = 'Zoom validación  bias promedio = <tspan class="redact">████████</tspan>';
+    axesBox(BOT);
+    const stepB = ymaxB / 5.6;
+    for (let k = 1; k * stepB <= ymaxB; k++) {
+      const y = YB(k * stepB);
+      S('line', { x1: BOT.x0, x2: BOT.x1, y1: y, y2: y, stroke: C.grid }, svg);
+      S('line', { x1: BOT.x0 - 4, x2: BOT.x0, y1: y, y2: y, stroke: C.ax }, svg);
+      redactBar(BOT.x0 - 78, y - 4, 70, 8);
+    }
+    ['2026-09-17', '2026-09-21', '2026-09-25', '2026-09-29', '2026-10-01', '2026-10-05'].forEach(s => {
+      const x = XB(new Date(s + 'T12:00:00'));
+      S('line', { x1: x, x2: x, y1: BOT.y0, y2: BOT.y1, stroke: C.grid }, svg);
+      S('line', { x1: x, x2: x, y1: BOT.y1, y2: BOT.y1 + 4, stroke: C.ax }, svg);
+      S('text', { x, y: BOT.y1 + 18, 'text-anchor': 'middle', 'font-size': 12, fill: '#222', text: s }, svg);
+    });
+    const xs = VAL_DATES.map(XB);
+    const band = xs.map((x, i) => `${x.toFixed(1)},${YB(DATA.valHi[i]).toFixed(1)}`).concat(xs.slice().reverse().map((x, j) => { const i = xs.length - 1 - j; return `${x.toFixed(1)},${YB(DATA.valLo[i]).toFixed(1)}`; }));
+    S('path', { d: 'M' + band.join('L') + 'Z', fill: C.band, opacity: .2, stroke: C.band, 'stroke-opacity': .35 }, svg);
+    S('line', { x1: BOT.x0, x2: BOT.x1, y1: YB(DATA.naive), y2: YB(DATA.naive), stroke: '#555', 'stroke-width': 1.3, 'stroke-dasharray': '2 3' }, svg);
+    S('path', { d: pathOf(xs, DATA.valReal.map(YB)), fill: 'none', stroke: C.blue, 'stroke-width': 2.2 }, svg);
+    S('path', { d: pathOf(xs, DATA.valPred.map(YB)), fill: 'none', stroke: C.orange, 'stroke-width': 2.2, 'stroke-dasharray': '6 3' }, svg);
+    xs.forEach((x, i) => {
+      S('circle', { cx: x, cy: YB(DATA.valReal[i]), r: 4.2, fill: C.blue }, svg);
+      const y = YB(DATA.valPred[i]);
+      S('path', { d: `M${x - 4},${y - 4}L${x + 4},${y + 4}M${x - 4},${y + 4}L${x + 4},${y - 4}`, stroke: C.orange, 'stroke-width': 1.8 }, svg);
+      // etiqueta de error tapada
+      const top = Math.min(YB(DATA.valReal[i]), y);
+      redactBar(x - 22, top - 14, 44, 5);
+    });
+    S('rect', { x: BOT.x0, y: BOT.y0, width: BOT.x1 - BOT.x0, height: BOT.y1 - BOT.y0, fill: 'none', stroke: C.ax }, svg);
+    const lb = S('g', { transform: `translate(${BOT.x1 - 178},${BOT.y0 + 8})` }, svg);
+    S('rect', { x: 0, y: 0, width: 170, height: 76, rx: 3, fill: '#fff', stroke: '#ccc' }, lb);
+    S('rect', { x: 8, y: 7, width: 22, height: 10, fill: C.band, opacity: .25, stroke: C.band, 'stroke-opacity': .4 }, lb);
+    S('text', { x: 38, y: 16, 'font-size': 11, fill: '#222', text: 'Banda 90%' }, lb);
+    S('line', { x1: 8, x2: 30, y1: 30, y2: 30, stroke: C.blue, 'stroke-width': 2 }, lb); S('circle', { cx: 19, cy: 30, r: 3.5, fill: C.blue }, lb);
+    S('text', { x: 38, y: 34, 'font-size': 11, fill: '#222', text: 'Real' }, lb);
+    S('line', { x1: 8, x2: 30, y1: 47, y2: 47, stroke: C.orange, 'stroke-width': 2, 'stroke-dasharray': '5 3' }, lb);
+    S('text', { x: 38, y: 51, 'font-size': 11, fill: '#222', text: 'Predicción' }, lb);
+    S('line', { x1: 8, x2: 30, y1: 64, y2: 64, stroke: '#555', 'stroke-dasharray': '2 3' }, lb);
+    S('text', { x: 38, y: 68, 'font-size': 11, fill: '#222', text: 'Naive mediana-28d' }, lb);
+    // sello
+    const stamp = S('g', { transform: 'translate(92,690)' }, svg);
+    S('text', { x: 0, y: 0, 'font-size': 11, 'font-weight': 700, fill: '#c0392b', 'letter-spacing': 1.5, text: 'MONTOS TAPADOS · SERIE FICTICIA CON LA MISMA FORMA' }, stamp);
+    svg.appendChild(overlay);
+    // capa de hover
+    const hov = S('g', { opacity: 0 }, svg);
+    const vline = S('line', { y1: BOT.y0, y2: BOT.y1, stroke: '#16324f', 'stroke-width': 1, 'stroke-dasharray': '3 3' }, hov);
+    const hit = S('rect', { x: BOT.x0, y: BOT.y0, width: BOT.x1 - BOT.x0, height: BOT.y1 - BOT.y0, fill: 'transparent' }, svg);
+    hit.addEventListener('mousemove', e => {
+      const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM().inverse());
+      let i = 0, best = 1e9;
+      xs.forEach((x, k) => { if (Math.abs(x - p.x) < best) { best = Math.abs(x - p.x); i = k; } });
+      vline.setAttribute('x1', xs[i]); vline.setAttribute('x2', xs[i]); hov.setAttribute('opacity', 1);
+      const inBand = DATA.valReal[i] >= DATA.valLo[i] && DATA.valReal[i] <= DATA.valHi[i];
+      const ev = (Sim.plan?.events || []).filter(ev => ev.day === i);
+      showTip(e, `<b>${fmtD(VAL_DATES[i])}</b> · día ${i + 1} de la proyección<br>Real ███ · Predicción ███<br>${inBand ? '✔ lo real cayó dentro de la banda' : '✖ lo real cayó fuera de la banda'}` +
+        (ev.length ? `<br><b>${ev.map(e => e.txt).join('<br>')}</b>` : ''));
+    });
+    hit.addEventListener('mouseleave', () => { hov.setAttribute('opacity', 0); hideTip(); });
+  }
+  // marcas de remesas que propone el simulador
+  function setPlan(plan) {
+    overlay.innerHTML = '';
+    if (!plan) return;
+    plan.events.forEach(ev => {
+      const x = XB(VAL_DATES[ev.day]);
+      S('line', { x1: x, x2: x, y1: BOT.y0 + 2, y2: BOT.y1 - 30, stroke: '#16324f', 'stroke-width': 1.5, opacity: .35 }, overlay);
+      S('circle', { cx: x, cy: BOT.y1 - 17, r: 13, fill: '#16324f' }, overlay);
+      S('use', { href: ev.sym, x: x - 10, y: BOT.y1 - 27, width: 20, height: 20, style: 'filter:invert(1)' }, overlay);
+      S('text', { x, y: BOT.y0 + 14, 'text-anchor': 'middle', 'font-size': 10.5, 'font-weight': 800, fill: '#16324f', text: ev.short }, overlay);
+    });
+  }
+  draw();
+  return { setPlan };
+})();
+
+// ── Explicación del modelo ─────────────────────────────────────────
+$('#model-explain').innerHTML = `
+  <div class="card card-pad stack">
+    <h3>¿Qué proyecta el modelo?</h3>
+    <div class="formula"><b>y</b>(sucursal, día) = Depósitos − Retiros = <b>flujo neto de caja</b></div>
+    <p class="small">No da un solo número: da <b>cuantiles</b>. Uno central (lo más probable) y dos bordes que arman la <b>banda de cobertura</b>. Es una <b>regresión cuantílica</b>: para cada cuantil τ minimiza la pérdida <i>pinball</i>
+      <span style="font-family:var(--mono);font-size:.82rem">L<sub>τ</sub> = máx(τ·(y−ŷ), (τ−1)·(y−ŷ))</span>, que castiga distinto quedarse corto que pasarse.</p>
+    <p class="small">Elegir el <b>percentil de cobertura</b> (P50, P90…) es una decisión de negocio: más cobertura implica menos riesgo de quedarse sin plata, pero más plata parada.</p>
+  </div>
+  <div class="card card-pad stack">
+    <h3>¿Cómo lo hace? Regresión no lineal con Transformer</h3>
+    <div class="row small" style="gap:6px">
+      <span class="pill na">ventana de días previos</span>→<span class="pill brinks">atención</span>→<span class="pill prosegur">3 cabezas: P-bajo · punto · P-alto</span>→<span class="pill tdi">simulador</span>
+    </div>
+    <ul class="clean small">
+      <li><b>Variables de entrada:</b> calendario (día de la semana, fin de mes, feriados), memoria de la serie, liquidez de la bóveda, movimientos de clientes comerciales y ciclos de la serie.</li>
+      <li><b>Atención:</b> el modelo aprende qué días del pasado reciente pesan más para el día que proyecta. Ahí está lo <b>no lineal</b>.</li>
+      <li><b>Robustez:</b> se combina con un pronóstico ingenuo y la banda se calibra con los errores fuera de muestra para que cubra lo que promete.</li>
+    </ul>
+  </div>`;
+
+// ── Simulador ──────────────────────────────────────────────────────
+const Sim = (() => {
+  const panel = $('#sim-panel');
+  const st = { loc: 'tucuman', tipo: 'pagadora', perc: 0.9, s0: 260, minHist: 110, tope: 700, abono: true, real: false };
+  const Z = { 0.5: 0, 0.75: 0.6745, 0.9: 1.2816, 0.95: 1.6449 };
+  panel.innerHTML = `
+    <h3>Simulador: ¿cuánto mover y hacia dónde? <span class="class-chip">Clase 20 · planificación + entera</span></h3>
+    <div class="sim-answer" id="sim-answer"></div>
+    <div class="stack" style="gap:10px" id="sim-ctrl-a"></div>
+    <div class="stack" style="gap:10px" id="sim-ctrl-b"></div>
+    <div class="grid-2 sim-pair" style="gap:12px;align-items:start">
+      <div><div class="small muted" style="font-weight:700">Hacia dónde</div><svg id="sim-map" viewBox="0 0 360 400" style="width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:10px" role="img" aria-label="Mapa de la remesa"></svg></div>
+      <div id="sim-route"></div>
+    </div>
+    <div><div class="small muted" style="font-weight:700">Saldo proyectado de la bóveda (percentil elegido)</div>
+      <svg id="sim-chart" viewBox="0 0 560 250" style="width:100%;height:auto;display:block" role="img" aria-label="Saldo proyectado"></svg></div>
+    <div id="sim-plan"></div>
+    <div id="sim-compare"></div>`;
+
+  const A = $('#sim-ctrl-a'), Bc = $('#sim-ctrl-b');
+  const label = (p, t) => H('label', { text: t, style: 'font-size:.78rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em' }, p);
+  label(A, 'Sucursal X está en');
+  const locSel = H('select', { class: 'btn', style: 'font-weight:500' }, A);
+  const REG = { centro: 'Centro', cuyo: 'Cuyo', pba: 'Provincia de Buenos Aires', patagonia: 'Patagonia', noa: 'Norte · NOA', nea: 'Norte · NEA' };
+  locSel.innerHTML = Object.entries(REG).map(([r, l]) => `<optgroup label="${l}">${PROV_NODES.filter(n => n.region === r).map(n => `<option value="${n.id}">${n.name}</option>`).join('')}</optgroup>`).join('') +
+    `<optgroup label="AMBA · CABA">${COMUNAS.filter(n => n.num !== 1).map(n => `<option value="${n.id}">${n.name} · ${n.barrio}</option>`).join('')}</optgroup>` +
+    `<optgroup label="AMBA · Conurbano">${PARTIDOS.map(n => `<option value="${n.id}">${n.name}</option>`).join('')}</optgroup>`;
+  locSel.value = st.loc;
+  locSel.addEventListener('change', () => { st.loc = locSel.value; run(); });
+  label(A, 'La curva de abajo es…');
+  seg(H('div', {}, A), [{ v: 'pagadora', label: 'Retiros netos' }, { v: 'receptora', label: 'Depósitos netos' }], st.tipo, v => { st.tipo = v; run(); });
+  const tipoNote = H('div', { class: 'small muted' }, A);
+  label(A, 'Percentil de cobertura');
+  seg(H('div', {}, A), [0.5, 0.75, 0.9, 0.95].map(v => ({ v, label: 'P' + Math.round(v * 100) })), st.perc, v => { st.perc = v; run(); });
+  const abWrap = H('label', { class: 'ctrl small' }, A);
+  abWrap.innerHTML = '<input type="checkbox" checked> abono AMBA vigente (Brinks)';
+  abWrap.querySelector('input').addEventListener('change', e => { st.abono = e.target.checked; run(); });
+
+  const field = (p, id, lbl, min, max, step, val, fmt, on) => {
+    const f = H('div', { class: 'field' }, p);
+    H('label', { for: id, html: lbl }, f);
+    const o = H('output', {}, f);
+    const r = H('input', { type: 'range', id, min, max, step, value: val }, f);
+    const sync = () => { o.textContent = fmt(+r.value); };
+    r.addEventListener('input', () => { sync(); on(+r.value); });
+    sync();
+    return { r, sync };
+  };
+  field(Bc, 'sim-s0', 'Saldo hoy en bóveda', 0, 700, 10, st.s0, v => fmtM(v, { d: 0 }), v => { st.s0 = v; run(); });
+  const fMin = field(Bc, 'sim-min', 'Mínimo histórico del saldo', 20, 300, 5, st.minHist, v => `${fmtM(v, { d: 0 })} → SS ${fmtM(1.1 * v, { d: 0 })}`, v => { st.minHist = v; run(); });
+  field(Bc, 'sim-tope', 'Tope bóveda / seguro', 200, 1500, 10, st.tope, v => fmtM(v, { d: 0 }), v => { st.tope = v; run(); });
+  const fT = field(Bc, 'sim-tna', 'TNA costo de oportunidad', 5, 80, 1, Math.round(G.tna * 100), v => pct(v / 100), v => { G.tna = v / 100; G.emit(); });
+  label(Bc, 'Billete');
+  const denSeg = seg(H('div', {}, Bc), [1000, 2000, 10000, 20000].map(v => ({ v, label: '$' + nf(v / 1000) + 'k' })), G.denom, v => { G.denom = v; G.emit(); });
+  $('#show-real-sim').addEventListener('change', e => { st.real = e.target.checked; run(); });
+
+  // ── modelo: flujos al percentil elegido ──
+  function flows() {
+    const k = Z[st.perc] / Z[0.95];
+    return DATA.valPred.map((p, i) => Math.max(0, p + k * (DATA.valHi[i] - p)));
+  }
+  const loc = () => NODE[st.loc];
+  const ambaOpt = () => loc().region === 'amba' ? { abono: { brinks: st.abono ? 1 : 0, prosegur: 0 }, usados: { brinks: 0, prosegur: 0 } } : undefined;
+  const route = Q => st.tipo === 'pagadora' ? bestRoute(TESORO, loc(), Q, ambaOpt()) : bestRoute(loc(), TESORO, Q, ambaOpt());
+  const K = Q => { if (Q < 1e-6) return 0; const r = route(Q); return r ? r.total : Infinity; };
+
+  // ── Programación dinámica (equivale al MILP de lot-sizing con costo fijo) ──
+  function planPagadora(need, s0, SS, tope, iD) {
+    const T = need.length;
+    let rem = Math.max(0, s0 - SS);
+    const deficit = Math.max(0, SS - s0);
+    const net = [], initLeft = [];
+    for (let t = 0; t < T; t++) {
+      initLeft.push(rem);
+      const n = need[t] + (t === 0 ? deficit : 0);
+      if (rem >= n) { net.push(0); rem -= n; } else { net.push(n - rem); rem = 0; }
+    }
+    const F = Array(T + 1).fill(Infinity), arg = Array(T + 1).fill(-1);
+    F[0] = 0;
+    for (let j = 1; j <= T; j++) {
+      for (let i = 1; i <= j; i++) {
+        if (!isFinite(F[i - 1])) continue;
+        let Q = 0; for (let t = i; t <= j; t++) Q += net[t - 1];
+        if (Q > 1e-6 && net[i - 1] < 1e-6) continue;          // no adelantar remesas a días sin necesidad
+        if (SS + initLeft[i - 1] + Q > tope + 1e-6) continue;   // no entra en la bóveda
+        let h = 0, carry = Q;
+        for (let t = i; t <= j; t++) { carry -= net[t - 1]; h += Math.max(0, carry) * iD; }
+        const c = F[i - 1] + K(Q) + h;
+        if (c < F[j] - 1e-9) { F[j] = c; arg[j] = i; }
+      }
+    }
+    if (!isFinite(F[T])) return null;
+    const ships = Array(T).fill(0);
+    for (let j = T; j > 0; j = arg[j] - 1) { const i = arg[j]; let Q = 0; for (let t = i; t <= j; t++) Q += net[t - 1]; ships[i - 1] = Q; }
+    return ships;
+  }
+  function planReceptora(inflow, s0, SS, tope, iD) {
+    const T = inflow.length, E0 = s0 - SS;
+    let bestEnd = { c: Infinity }, G2 = Array(T + 1).fill(null);
+    const starts = [{ s: 0, A: E0, c: 0, pick0: 0 }];
+    if (E0 > 1e-6) starts.push({ s: 0, A: 0, c: K(E0), pick0: E0 });
+    const relax = (node) => {
+      let A = node.A, h = 0;
+      if (node.s === T) { if (node.c < bestEnd.c) bestEnd = { c: node.c, from: node }; return; }
+      for (let j = node.s + 1; j <= T; j++) {
+        A += inflow[j - 1];
+        if (SS + A > tope + 1e-6) break;
+        const pickCost = A > 1e-6 ? K(A) : 0;
+        const cj = node.c + h + pickCost;
+        if (!G2[j] || cj < G2[j].c - 1e-9) G2[j] = { s: j, A: 0, c: cj, from: node, Q: Math.max(0, A) };
+        h += Math.max(0, A) * iD;
+        if (j === T && node.c + h < bestEnd.c) bestEnd = { c: node.c + h, from: node };
+      }
+    };
+    starts.forEach(relax);
+    for (let j = 1; j <= T; j++) if (G2[j]) relax(G2[j]);
+    if (!isFinite(bestEnd.c)) return null;
+    const picks = Array(T).fill(0); let pick0 = 0;
+    for (let n = bestEnd.from; n; n = n.from) { if (n.s > 0 && n.Q) picks[n.s - 1] = n.Q; if (n.s === 0) pick0 = n.pick0; }
+    return { picks, pick0 };
+  }
+  // Simula un plan contra un vector de flujos (proyectado o real)
+  function simulate(flow, plan, SS, tope, iD) {
+    const T = flow.length, pts = [], path = [];
+    let s = st.s0 - (plan.pick0 || 0), mov = 0, ocio = 0, minS = Infinity, maxS = -Infinity, breakSS = -1, broke0 = -1, overTope = -1;
+    pts.push([0, st.s0]); if (plan.pick0) pts.push([0, s]);
+    if (plan.pick0) mov += K(plan.pick0);
+    for (let t = 0; t < T; t++) {
+      if (st.tipo === 'pagadora') {
+        const q = plan.ships ? plan.ships[t] : 0;
+        if (q > 1e-6) { s += q; mov += K(q); pts.push([t + 0.02, s]); if (s > tope + 1e-6 && overTope < 0) overTope = t; }
+        s -= flow[t];
+      } else {
+        s += flow[t];
+        maxS = Math.max(maxS, s);
+        if (s > tope + 1e-6 && overTope < 0) overTope = t;
+        const q = plan.picks ? Math.min(plan.picks[t], Math.max(0, s - SS)) : 0;   // nunca se evacua por debajo del SS
+        if (q > 1e-6) { pts.push([t + 1, s]); s -= q; mov += K(q); }
+      }
+      if (s < SS - 1e-6 && breakSS < 0) breakSS = t;
+      if (s < 0 && broke0 < 0) broke0 = t;
+      ocio += Math.max(0, s) * iD;
+      minS = Math.min(minS, s); maxS = Math.max(maxS, s);
+      pts.push([t + 1, s]); path.push(s);
+    }
+    return { pts, path, mov, ocio, total: mov + ocio, minS, maxS, breakSS, broke0, overTope };
+  }
+
+  function run() {
+    const SS = 1.1 * st.minHist, iD = G.iDay, f = flows(), L = loc();
+    fT.r.value = Math.round(G.tna * 100); fT.sync(); denSeg.set(G.denom);
+    tipoNote.innerHTML = st.tipo === 'pagadora'
+      ? 'Sucursal <b>pagadora</b>: retiran más de lo que depositan. Hay que <b>abastecerla</b> desde el Tesoro.'
+      : 'Sucursal <b>receptora</b>: depositan más de lo que retiran (ej.: cliente comercial). Hay que <b>evacuar</b> el excedente al Tesoro.';
+    abWrap.style.display = L.region === 'amba' ? '' : 'none';
+    let plan;
+    if (st.tipo === 'pagadora') { const ships = planPagadora(f, st.s0, SS, st.tope, iD); plan = ships ? { ships } : null; }
+    else { const r = planReceptora(f, st.s0, SS, st.tope, iD); plan = r; }
+    const none = st.tipo === 'pagadora' ? { ships: Array(f.length).fill(0) } : { picks: Array(f.length).fill(0), pick0: 0 };
+    const simNone = simulate(f, none, SS, st.tope, iD);
+    // estrategias alternativas
+    const alts = [];
+    if (st.tipo === 'pagadora') {
+      const daily = (() => { const sh = []; let s = st.s0; f.forEach(n => { const need = Math.max(0, SS + n - s); sh.push(need); s = s + need - n; }); return { ships: sh }; })();
+      const tot = Math.max(0, f.reduce((a, b) => a + b, 0) + SS - st.s0);
+      alts.push(['Remesa diaria (lo justo cada día)', daily]);
+      alts.push(['Una sola remesa hoy', { ships: f.map((_, i) => i === 0 ? tot : 0) }]);
+    } else {
+      alts.push(['Evacuar todos los días', { picks: f.map(() => 1e9), pick0: Math.max(0, st.s0 - SS) }]);
+      alts.push(['Una sola evacuación al final', { picks: f.map((_, i) => i === f.length - 1 ? 1e9 : 0), pick0: 0 }]);
+    }
+    // para “evacuar” 1e9 = todo lo que esté arriba del SS
+    const normPicks = p => {
+      if (!p.picks) return p;
+      let s = st.s0 - (p.pick0 || 0);
+      const picks = f.map((x, t) => { s += x; const q = p.picks[t] >= 1e9 ? Math.max(0, s - SS) : p.picks[t]; s -= q; return q; });
+      return { ...p, picks };
+    };
+    const simPlan = plan ? simulate(f, plan, SS, st.tope, iD) : null;
+    const events = [];
+    if (plan) {
+      if (plan.pick0) events.push({ day: 0, Q: plan.pick0, start: true });
+      (plan.ships || plan.picks).forEach((q, t) => { if (q > 1e-6) events.push({ day: t, Q: q }); });
+      events.forEach((ev, k) => {
+        const r = route(ev.Q);
+        ev.route = r; ev.sym = r && r.legs.some(l => l.kind === 'air') ? '#ico-plane' : '#ico-truck';
+        ev.short = `R${k + 1}`;
+        ev.txt = `R${k + 1}: ${st.tipo === 'pagadora' ? 'llegan' : 'se evacuan'} ${fmtM(ev.Q, { d: 0 })} (${r ? r.legs.map(legDesc).join(' + ') : '—'})`;
+      });
+    }
+    Sim.plan = plan ? { events } : null;
+    Fcst.setPlan(Sim.plan);
+
+    // ── respuesta ──
+    const ans = $('#sim-answer');
+    if (!plan) {
+      ans.innerHTML = `<div class="k">Sin solución factible</div><div class="v">El tope de la bóveda no alcanza para cubrir ni un día con este percentil</div><div class="d">Es un <b>problema no factible</b> (caso particular de LP, clase 17): subí el tope o bajá la cobertura.</div>`;
+    } else {
+      const first = events[0];
+      const verbo = st.tipo === 'pagadora' ? 'traer' : 'mandar al Tesoro';
+      const rr = first?.route;
+      const today = first && first.day === 0;
+      const cover = (() => { if (!first) return null; const nx = events[1]; return nx ? VAL_DATES[nx.day] : null; })();
+      ans.innerHTML = !first
+        ? `<div class="k">Hoy · ${fmtD(VAL_DATES[0])}</div><div class="v">No hace falta mover nada en los ${f.length} días</div><div class="d">El saldo alcanza: mover costaría más que el costo ocioso.</div>`
+        : `<div class="k">${today ? 'Hoy · ' + fmtD(VAL_DATES[0]) : 'Hoy no se mueve nada'}</div>
+           <div class="v">${today ? '' : 'Primera remesa el ' + fmtD(VAL_DATES[first.day]) + ': '}${verbo} ${fmtM(first.Q, { d: 0 })} · ${octopacks(first.Q)} octopack${octopacks(first.Q) === 1 ? '' : 's'}</div>
+           <div class="d">${st.tipo === 'pagadora' ? 'Desde el Tesoro Central hacia ' + L.name : 'Desde ' + L.name + ' hacia el Tesoro Central'} por ${rr ? rr.legs.map(legDesc).join(' + ') : '—'} (${fmtM(rr ? rr.total : 0)}).
+           ${cover ? 'La siguiente remesa: ' + fmtD(cover) + '.' : 'No hace falta otra en el horizonte.'} Plan completo: ${events.length} remesa${events.length === 1 ? '' : 's'}, costo total ${fmtM(simPlan.total)}.</div>`;
+    }
+
+    // ── mapa y ruta ──
+    drawMap(L, events[0]?.route);
+    const r1 = events[0]?.route;
+    $('#sim-route').innerHTML = r1 ? `<table class="cost-table"><tbody>${r1.legs.map(l => `<tr><td>${legDesc(l)}<br><span class="muted small">${l.from.name} → ${l.to.name}</span></td><td class="num">${fmtM(l.total)}</td></tr>`).join('')}
+        <tr class="total"><td>Remesa 1 (${fmtM(events[0].Q, { d: 0 })})</td><td class="num">${fmtM(r1.total)}</td></tr></tbody></table>
+        <p class="small muted" style="margin-top:6px">La ruta sale del camino más corto (Dijkstra) para ese monto: con montos chicos suele ganar el camión y con montos grandes el avión. Los octopacks extra encarecen el avión.</p>`
+      : `<p class="small muted">Sin remesas en el horizonte.</p>`;
+
+    // ── gráfico de saldo ──
+    const real = st.real && plan ? simulate(DATA.valReal, plan, SS, st.tope, iD) : null;
+    drawChart(SS, simNone, simPlan, real);
+
+    // ── tabla del plan ──
+    if (plan && events.length) {
+      $('#sim-plan').innerHTML = `<h3 style="font-size:1rem">El plan óptimo, remesa por remesa</h3><table class="cost-table" style="margin-top:6px"><thead><tr><th>#</th><th>Fecha</th><th class="num">Monto</th><th class="num">Octop.</th><th>Ruta</th><th class="num">Costo</th></tr></thead><tbody>${events.map((ev, k) => `<tr><td>R${k + 1}</td><td>${fmtD(VAL_DATES[ev.day])}${ev.start ? ' (al abrir)' : st.tipo === 'receptora' ? ' (al cierre)' : ''}</td><td class="num">${fmtM(ev.Q, { d: 0 })}</td><td class="num">${octopacks(ev.Q)}</td><td class="small">${ev.route ? ev.route.legs.map(legDesc).join(' + ') : '—'}</td><td class="num">${fmtM(ev.route ? ev.route.total : 0)}</td></tr>`).join('')}</tbody></table>`;
+    } else $('#sim-plan').innerHTML = '';
+
+    // ── comparación de estrategias ──
+    const rows = [];
+    if (simPlan) rows.push(['★ Plan óptimo', simPlan, events.length, true]);
+    alts.forEach(([name, p]) => { if (!p) return; const pp = normPicks(p); const s = simulate(f, pp, SS, st.tope, iD); rows.push([name, s, (pp.ships || pp.picks).filter(q => q > 1e-6).length + (pp.pick0 ? 1 : 0), false]); });
+    rows.push(['No mover', simNone, 0, false]);
+    const okTxt = s => {
+      const issues = [];
+      if (s.broke0 >= 0) issues.push(`sin efectivo el ${fmtD(VAL_DATES[s.broke0])}`);
+      else if (s.breakSS >= 0) issues.push(`rompe el SS el ${fmtD(VAL_DATES[s.breakSS])}`);
+      if (s.overTope >= 0) issues.push(`pasa el tope el ${fmtD(VAL_DATES[s.overTope])}`);
+      return issues.length ? `<span style="color:var(--bad)">✖ ${issues.join(' · ')}</span>` : '<span style="color:var(--ok)">✔ cumple</span>';
+    };
+    $('#sim-compare').innerHTML = `<h3 style="font-size:1rem">¿Por qué este plan? Comparación de estrategias</h3>
+      <table class="cost-table" style="margin-top:6px"><thead><tr><th>Estrategia</th><th class="num">Remesas</th><th class="num">Mover</th><th class="num">Ocioso</th><th class="num">Total</th><th>Restricciones</th></tr></thead><tbody>
+      ${rows.map(([n, s, k, best]) => `<tr class="${best ? 'best' : ''}"><td>${n}</td><td class="num">${k}</td><td class="num">${fmtM(s.mov)}</td><td class="num">${fmtM(s.ocio)}</td><td class="num">${fmtM(s.total)}</td><td class="small">${okTxt(s)}</td></tr>`).join('')}
+      </tbody></table>
+      <p class="small muted" style="margin-top:6px">Costo ocioso = Σ saldo de cada día × TNA/365 (TNA ${pct(G.tna)}). Stock de seguridad = 1,10 × ${fmtM(st.minHist, { d: 0 })} = ${fmtM(SS, { d: 0 })}. Cobertura P${Math.round(st.perc * 100)} sobre la proyección diaria.
+      ${real ? `<br><b>Con lo que pasó en realidad</b>, el plan dejó un saldo mínimo de ${fmtM(real.minS, { d: 0 })} y máximo de ${fmtM(real.maxS, { d: 0 })}: ${okTxt(real)}.` : ''}</p>`;
+  }
+
+  function drawChart(SS, none, plan, real) {
+    const c = $('#sim-chart'); c.innerHTML = '';
+    const W = 560, Hh = 250, L = 56, R = 12, T = 28, B = 30, Tn = DATA.valPred.length;
+    const all = [...none.pts, ...(plan ? plan.pts : []), ...(real ? real.pts : [])].map(p => p[1]).concat([SS, st.tope]);
+    const ymax = Math.max(...all) * 1.08;
+    const ymin = Math.max(Math.min(0, ...all), -0.25 * ymax);
+    const cid = 'simclip';
+    const cp = S('clipPath', { id: cid }, c); S('rect', { x: L, y: T, width: W - L - R, height: Hh - T - B }, cp);
+    const X = t => L + (W - L - R) * t / Tn, Y = v => T + (Hh - T - B) * (1 - (v - ymin) / (ymax - ymin));
+    const step = Math.pow(10, Math.floor(Math.log10((ymax - ymin) / 4)));
+    const nice = [1, 2, 2.5, 5, 10].map(m => m * step).find(s => (ymax - ymin) / s <= 6);
+    for (let v = Math.ceil(ymin / nice) * nice; v <= ymax; v += nice) {
+      S('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: v === 0 ? '#9aa3ae' : '#eceae4' }, c);
+      S('text', { x: L - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 10.5, fill: '#6f7482', text: nf(v) }, c);
+    }
+    for (let t = 0; t <= Tn; t += 3) S('text', { x: X(t), y: Hh - 12, 'text-anchor': 'middle', 'font-size': 10.5, fill: '#6f7482', text: t === 0 ? 'hoy' : fmtD(VAL_DATES[t - 1]).slice(4) }, c);
+    const hl = (v, col, txt) => { S('line', { x1: L, x2: W - R, y1: Y(v), y2: Y(v), stroke: col, 'stroke-dasharray': '6 4', 'stroke-width': 1.4 }, c); S('text', { x: W - R, y: Y(v) - 4, 'text-anchor': 'end', 'font-size': 10.5, 'font-weight': 700, fill: col, text: txt }, c); };
+    hl(SS, '#c0392b', 'stock de seguridad'); hl(st.tope, '#b7791f', 'tope');
+    const line = (pts, col, w, dash) => S('path', { d: 'M' + pts.map(p => `${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join('L'), fill: 'none', stroke: col, 'stroke-width': w, 'stroke-dasharray': dash || '', 'clip-path': `url(#${cid})` }, c);
+    line(none.pts, '#9aa3ae', 2, '4 3');
+    if (real) line(real.pts, '#2ca02c', 2);
+    if (plan) line(plan.pts, '#16324f', 2.6);
+    const lg = [['sin mover', '#9aa3ae', '4 3'], ['con el plan', '#16324f', ''], ...(real ? [['plan con lo real', '#2ca02c', '']] : [])];
+    if (none.broke0 >= 0) { const xb = X(none.broke0 + 1); S('circle', { cx: xb, cy: Y(Math.max(ymin, none.path[none.broke0])), r: 4, fill: '#c0392b' }, c); }
+    lg.forEach(([t, col, d], i) => { S('line', { x1: L + 6 + i * 130, x2: L + 26 + i * 130, y1: 10, y2: 10, stroke: col, 'stroke-width': 2.4, 'stroke-dasharray': d }, c); S('text', { x: L + 30 + i * 130, y: 14, 'font-size': 11, fill: '#454a57', text: t }, c); });
+  }
+
+  // mini mapa con la remesa
+  function drawMap(L, r) {
+    const svg = $('#sim-map'); svg.innerHTML = '';
+    S('rect', { x: 0, y: 0, width: 360, height: 400, fill: '#fff' }, svg);
+    const amba = L.region === 'amba';
+    const P = amba ? makeProj(-58.62, -58.25, -34.49, -34.76, 360, 400, 6) : makeProj(-73.5, -53.5, -21.5, Math.min(-40, L.lat - 2.5), 360, 400, 6);
+    if (amba) {
+      const caba = CABA_POLY.map(([a, b]) => P(a, b));
+      voronoi(PARTIDOS.map(P.node), AMBA_POLY.map(([a, b]) => P(a, b))).forEach((poly, i) => S('path', { d: polyPath(poly), fill: PARTIDOS[i].id === L.id ? '#24507a' : '#ddd8e0', stroke: '#fff' }, svg));
+      S('path', { d: polyPath(caba), fill: 'var(--land)', stroke: '#fff' }, svg);
+      voronoi(COMUNAS.map(P.node), caba).forEach((poly, i) => S('path', { d: polyPath(poly), fill: COMUNAS[i].id === L.id ? '#24507a' : 'var(--land)', stroke: '#fff' }, svg));
+    } else {
+      S('path', { d: polyPath(ARG_POLY.map(([a, b]) => P(a, b))), fill: 'var(--land)', stroke: '#fff' }, svg);
+      S('path', { d: polyPath(clipHalf(ARG_POLY.map(([a, b]) => P(a, b)), 0, 1, P(-60, LAT_NORTE)[1])), fill: 'url(#hatch)', opacity: .8 }, svg);
+      PROV_NODES.forEach(n => { const [x, y] = P.node(n); S('circle', { cx: x, cy: y, r: n.id === L.id ? 6 : 3, fill: n.id === L.id ? '#c99a2e' : '#8a7f91' }, svg); });
+    }
+    const [tx, ty] = P.node(TESORO);
+    S('use', { href: '#ico-vault', x: tx - 11, y: ty - 11, width: 22, height: 22 }, svg);
+    const [lx, ly] = P.node(L);
+    S('text', { x: lx + (amba ? 0 : 9), y: ly + (amba ? 18 : 4), 'text-anchor': amba ? 'middle' : 'start', 'font-size': 11, 'font-weight': 800, fill: '#16324f', text: 'Sucursal X' }, svg);
+    if (r) r.legs.forEach(l => {
+      const arc = arcPath(P.node(l.from), P.node(l.to), l.kind === 'air' ? 0.28 : 0.08);
+      S('path', { d: arc.d, class: 'arc-main', 'marker-end': 'url(#arrow-head)', style: l.kind === 'air' ? '' : 'stroke-dasharray:2 4;stroke-width:2.6' }, svg);
+      mover(svg, arc.d, l.kind === 'air' ? '#ico-plane' : '#ico-truck', 20, 2.6);
+    });
+    S('text', { x: 8, y: 392, 'font-size': 10.5, fill: '#6f7482', text: st.tipo === 'pagadora' ? 'Tesoro → Sucursal X (abastecer)' : 'Sucursal X → Tesoro (evacuar excedente)' }, svg);
+  }
+
+  G.on(() => { if ($('#tab-proy').classList.contains('active')) run(); else Sim.dirty = true; });
+  window.addEventListener('tabchange', () => { if ($('#tab-proy').classList.contains('active') && Sim.dirty) { Sim.dirty = false; run(); } });
+  const api = { plan: null, run, dirty: false };
+  setTimeout(run);
+  return api;
+})();
+// ══════════════════════════════════════════════════════════════════
+//  SOLAPA 3 · CONEXIÓN CON LAS CLASES 15–20 (repo invo.py)
+// ══════════════════════════════════════════════════════════════════
+const REPO = 'https://github.com/TadeoSinay/invo.py/blob/main/';
+const CLASES = [
+  { n: 15, tema: 'Intro a optimización · LP por método gráfico · PuLP',
+    donde: '<b>Variables de decisión:</b> cuánto mover, cuándo y por qué ruta. <b>Parámetros:</b> proyección, tarifas y TNA. <b>FO:</b> minimizar costo ocioso + costo de mover. <b>Restricciones:</b> SS ≤ saldo ≤ tope.',
+    q: 'Con dos variables (x₁ = $M por camión, x₂ = $M por avión) para cubrir una necesidad, ¿cómo queda la región factible si el avión tiene franquicia de 3 octopacks?',
+    links: [['Intro optimización', 'optimizacion/teoria/TEO_intro-optimizacion/intro-optimizacion.pdf'], ['Método gráfico', 'optimizacion/teoria/TEO_lp-metodo-grafico/linprog_metodo_grafico.pdf'], ['PuLP', 'optimizacion/practica/PRA_intro_software_optimizacion/pulp-ejemplo-inicial.ipynb']] },
+  { n: 16, tema: 'Casos particulares (gráfico) · Simplex con tablas',
+    donde: '<b>Óptimos múltiples:</b> si dos rutas cuestan lo mismo, hay empate y cualquiera es óptima. En Simplex, cada pivoteo cambia qué remesa entra a la base.',
+    q: 'En el ranking de rutas, ¿qué tarifa habría que tocar para que Brinks y Prosegur empaten en Mar del Plata? ¿Qué le pasa al óptimo?',
+    links: [['Casos particulares', 'optimizacion/teoria/TEO_lp-metodo-grafico-casos-particulares/casos-particulares-metodo-grafico.pdf'], ['Simplex', 'optimizacion/teoria/TEO_lp-simplex-tablas/tablas-simplex.pdf']] },
+  { n: 17, tema: 'Variables ficticias · casos particulares en Simplex',
+    donde: '<b>Saldo ≥ SS</b> es una restricción de “≥”: necesita variable artificial (Big M o dos fases). Si el tope no alcanza para cubrir un día, el problema es <b>no factible</b> y el simulador lo avisa.',
+    q: 'En la solapa 2, poné cobertura P95 y bajá el tope. ¿En qué momento el problema deja de tener solución? ¿Qué restricción lo rompe?',
+    links: [['Variables ficticias', 'optimizacion/teoria/TEO_lp-simplex-variables-ficticias/lp-simplex-variables-ficticias.pdf'], ['Casos particulares Simplex', 'optimizacion/teoria/TEO_lp-simplex-casos-particulares/lp-simplex-casos-particulares.pdf']] },
+  { n: 18, tema: 'Flujo de Mínimo Costo: camino más corto',
+    donde: 'Cada envío es un <b>camino</b> en un grafo: los nodos son el Tesoro, los aeropuertos y las sucursales, y los arcos son tramos con su costo. Un combinado es un camino de 2 arcos. X<sub>ij</sub> = 1 si uso el tramo i→j.',
+    q: 'Armá la matriz nodo-arco del grafo Tesoro → {Salta, Tucumán} → Orán y resolvé con linprog como en la clase.',
+    links: [['FMC camino más corto', 'optimizacion/teoria/TEO_lp-mcf-shortest-path/lp-mcf-shortest-path.pdf'], ['Heurísticas', 'optimizacion/casos/CAS_shortest-path-heuristicas/heuristicas-shortest-path.pdf']] },
+  { n: 19, tema: 'Dijkstra · Transporte',
+    donde: 'La tabla “Todas las rutas posibles” es <b>Dijkstra</b> con el costo como distancia. Con varias sucursales que sobran y varias que faltan, aparece el <b>problema de transporte</b> (abajo).',
+    q: '¿Por qué Dijkstra sirve acá y dejaría de servir si un tramo tuviera costo negativo (un subsidio, por ejemplo)?',
+    links: [['Dijkstra', 'optimizacion/teoria/TEO_shortest-path-dijkstra/shortest-path-dijkstra.pdf'], ['FMC transporte', 'optimizacion/teoria/TEO_lp-mcf-transporte/lp-mcf-transporte.pdf'], ['Ejercicio transporte', 'optimizacion/practica/PRA_ejercicio-transporte/ejercicio-transporte.pdf']] },
+  { n: 20, tema: 'Supply chain · Planificación de la producción · Programación entera',
+    donde: '<b>Saldo(t) = Saldo(t−1) + flujo ± remesa</b> es el balance de stock de planificación. El Tesoro y los aeropuertos son <b>nodos de transbordo</b>. El básico es un <b>costo fijo</b> (x ≤ M·y, como en warehouse location), los octopacks son enteros y qué transportadora contratar es un <b>set cover</b>.',
+    q: '¿Cuál es el mínimo de transportadoras que hay que contratar para cubrir todas las sucursales del mapa? Planteá el set cover.',
+    links: [['Supply chain', 'optimizacion/practica/PRA_ejercicio-supply-chain/ejercicio-supply-chain.pdf'], ['Planificación', 'optimizacion/teoria/TEO_lp-planificacion-produccion/lp-planificacion-produccion.pdf'], ['Entera', 'optimizacion/teoria/TEO_programacion-entera/programacion-entera.pdf']] },
+];
+$('#timeline').innerHTML = CLASES.map(c => `
+  <div class="card tl">
+    <div class="cl">Clase ${c.n}</div>
+    <h4>${c.tema}</h4>
+    <div class="where">${c.donde}</div>
+    <div class="q"><b>Para preguntar:</b> ${c.q}</div>
+    <div>${c.links.map(([t, p]) => `<a href="${REPO + p}" target="_blank" rel="noopener">${t} ↗</a>`).join(' · ')}</div>
+  </div>`).join('');
+
+$('#formulacion').innerHTML = `
+  <h3>El modelo completo (MILP) <span class="class-chip">Clase 20</span></h3>
+  <div class="math">
+    <span class="lbl">Conjuntos y parámetros</span>
+    t = 1…T días · r ∈ rutas (modo × transportadora) · f<sub>t</sub> = flujo neto proyectado al percentil elegido ·
+    S<sub>0</sub> saldo de hoy · SS = 1,10 · mín<sub>histórico</sub> · U = tope · i = TNA/365 ·
+    b<sub>r</sub> básico · v<sub>r</sub> variable (camión: v·km) · s<sub>r</sub> sobrecargo por octopack · F<sub>r</sub> franquicia · V<sub>o</sub> valor del octopack
+    <span class="lbl">Variables</span>
+    x<sub>t,r</sub> ≥ 0 plata enviada · y<sub>t,r</sub> ∈ {0,1} uso la ruta · o<sub>t,r</sub> ∈ ℤ<sup>+</sup> octopacks · e<sub>t,r</sub> ≥ 0 octopacks en exceso · S<sub>t</sub> saldo
+    <span class="lbl">Función objetivo</span>
+    min&nbsp; Σ<sub>t</sub> i·S<sub>t</sub> &nbsp;+&nbsp; Σ<sub>t,r</sub> ( b<sub>r</sub>·y<sub>t,r</sub> + v<sub>r</sub>·x<sub>t,r</sub> + s<sub>r</sub>·e<sub>t,r</sub> )
+    <span class="lbl">Sujeto a</span>
+    S<sub>t</sub> = S<sub>t−1</sub> + f<sub>t</sub> ± Σ<sub>r</sub> x<sub>t,r</sub> &nbsp;<span class="muted small">(balance de bóveda)</span><br>
+    SS ≤ S<sub>t</sub> ≤ U &nbsp;<span class="muted small">(stock de seguridad y tope)</span><br>
+    x<sub>t,r</sub> ≤ M·y<sub>t,r</sub> &nbsp;<span class="muted small">(costo fijo, como warehouse location)</span><br>
+    V<sub>o</sub>·o<sub>t,r</sub> ≥ x<sub>t,r</sub> ; &nbsp; e<sub>t,r</sub> ≥ o<sub>t,r</sub> − F<sub>r</sub> &nbsp;<span class="muted small">(octopacks enteros)</span><br>
+    y<sub>t,r</sub> = 0 si la transportadora de r no cubre la sucursal &nbsp;<span class="muted small">(cobertura)</span><br>
+    Σ<sub>t</sub> y<sub>t,abono</sub> ≤ viajes incluidos &nbsp;<span class="muted small">(abono AMBA)</span>
+  </div>
+  <p class="small muted">El simulador de la solapa 2 lo resuelve exacto con <b>programación dinámica</b> (cada remesa cubre un tramo de días: es el modelo de lote económico dinámico), que da el mismo óptimo que el MILP para una sucursal. Con muchas sucursales a la vez, se resuelve el MILP con PuLP.</p>`;
+
+function pyHL(code) {
+  const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  return code.split('\n').map(line => {
+    const i = line.indexOf('#');
+    const codePart = i >= 0 ? line.slice(0, i) : line, com = i >= 0 ? line.slice(i) : '';
+    let h = esc(codePart)
+      .replace(/('[^']*')/g, '<span class="s">$1</span>')
+      .replace(/\b(import|for|in|if|else|def|return|print|range)\b/g, '<span class="k">$1</span>')
+      .replace(/\b(\d+(?:\.\d+)?(?:_\d+)*)\b/g, '<span class="n">$1</span>');
+    return h + (com ? `<span class="c">${esc(com)}</span>` : '');
+  }).join('\n');
+}
+$('#pulp').innerHTML = `
+  <h3>Así se escribe en PuLP <span class="class-chip">Clase 15 · software de optimización</span></h3>
+  <p class="small muted">Con el mismo estilo de las notebooks del curso (planificación de la producción + warehouse location):</p>
+  <pre class="code">${pyHL(`import pulp
+
+lp01 = pulp.LpProblem('remesas-boveda', pulp.LpMinimize)
+
+# Sets:
+dias = range(15)
+rutas = ['brinks_camion', 'prosegur_camion', 'prosegur_avion', 'avion_mas_tdi']
+
+# Parámetros (ficticios):
+f = [...]                 # flujo neto proyectado (sale del Transformer, percentil P90)
+S0, SS, U = 260, 121, 700 # saldo hoy, stock de seguridad (1,10 x mínimo), tope
+i = 0.32 / 365            # TNA -> tasa diaria (costo ocioso)
+basico = {...}            # costo fijo por envío y ruta
+var = {...}               # costo variable por $M (camión: v * km)
+M = 99999
+
+# Variables:
+X = pulp.LpVariable.dicts('X', [(t, r) for t in dias for r in rutas], 0, None, cat='Continuous')
+Y = pulp.LpVariable.dicts('Y', [(t, r) for t in dias for r in rutas], 0, 1, cat='Binary')
+O = pulp.LpVariable.dicts('O', [(t, r) for t in dias for r in rutas], 0, None, cat='Integer')
+S = pulp.LpVariable.dicts('S', dias, SS, U, cat='Continuous')
+
+# Función objetivo: costo ocioso + costo de mover
+lp01 += pulp.lpSum(i * S[t] for t in dias) + \\
+        pulp.lpSum(basico[r] * Y[t, r] + var[r] * X[t, r] for t in dias for r in rutas), 'Z'
+
+# Balance de bóveda (= balance de stock de planificación):
+for t in dias:
+    previo = S0 if t == 0 else S[t - 1]
+    lp01 += S[t] == previo - f[t] + pulp.lpSum(X[t, r] for r in rutas)
+
+# Costo fijo y octopacks enteros:
+for t in dias:
+    for r in rutas:
+        lp01 += X[t, r] <= M * Y[t, r]    # como warehouse location
+        lp01 += X[t, r] <= 160 * O[t, r]  # octopacks de $160 M
+
+lp01.solve()
+print(pulp.LpStatus[lp01.status], pulp.value(lp01.objective))`)}</pre>`;
+
+// ── Red del día: transporte con transbordo (FMC) ───────────────────
+const Mcf = (() => {
+  const card = $('#mcf-card');
+  const SUP = ['rosario', 'mdp', 'neuquen'], DEM = ['cordoba', 'tucuman', 'salta'];
+  const st = { b: { rosario: 220, mdp: 160, neuquen: 120, cordoba: 180, tucuman: 210, salta: 150 } };
+  card.innerHTML = `
+    <h3>La red del día: varias sucursales a la vez <span class="class-chip">Clases 18–20 · transporte con transbordo</span></h3>
+    <p class="sub">Algunas sucursales <b>sobran</b> (receptoras) y otras <b>faltan</b> (pagadoras). El Tesoro funciona como <b>nodo de transbordo</b> y absorbe o pone la diferencia. Mové las cantidades y mirá cómo el <b>Flujo de Mínimo Costo</b> decide quién le manda a quién.</p>
+    <div style="display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);gap:16px;align-items:start;margin-top:10px" class="mcf-grid">
+      <svg id="mcf-map" viewBox="0 0 420 470" style="width:100%;height:auto;display:block" role="img" aria-label="Red de flujo entre sucursales"></svg>
+      <div class="stack">
+        <div class="grid-2" style="gap:10px" id="mcf-ctrls"></div>
+        <div class="formula">min Σ c<sub>ij</sub>·x<sub>ij</sub> &nbsp; s.a. &nbsp; Σ<sub>j</sub> x<sub>ij</sub> − Σ<sub>j</sub> x<sub>ji</sub> = b<sub>i</sub> &nbsp;∀i ; &nbsp; x<sub>ij</sub> ≥ 0<br><span class="c">b &gt; 0 sobra (oferta) · b &lt; 0 falta (demanda) · c = costo por $M de un lote típico de $100 M (Dijkstra)</span></div>
+        <div id="mcf-out"></div>
+      </div>
+    </div>`;
+  const ctr = $('#mcf-ctrls');
+  [...SUP, ...DEM].forEach(id => {
+    const n = NODE[id], sup = SUP.includes(id);
+    const f = H('div', { class: 'field' }, ctr);
+    H('label', { html: `${sup ? '▲ sobra en' : '▼ falta en'} <b>${n.name}</b>` }, f);
+    const o = H('output', {}, f);
+    const r = H('input', { type: 'range', min: 0, max: 400, step: 10, value: st.b[id] }, f);
+    const sync = () => { o.textContent = fmtM(+r.value, { d: 0 }); };
+    r.addEventListener('input', () => { st.b[id] = +r.value; sync(); solve(); });
+    sync();
+  });
+
+  // costo unitario por $M de cada arco (lote típico de $100 M, ruta más barata)
+  const LOTE = 100;
+  const unit = (a, b) => { const r = bestRoute(NODE[a], NODE[b], LOTE); return r ? { c: r.total / LOTE, r } : null; };
+  let arcs = [];
+  function buildArcs() {
+    arcs = [];
+    SUP.forEach(s => { DEM.forEach(d => { const u = unit(s, d); if (u) arcs.push({ from: s, to: d, ...u }); }); const u = unit(s, 'tesoro'); if (u) arcs.push({ from: s, to: 'tesoro', ...u }); });
+    DEM.forEach(d => { const u = unit('tesoro', d); if (u) arcs.push({ from: 'tesoro', to: d, ...u }); });
+  }
+
+  // Camino más corto sucesivo (Bellman-Ford sobre la red residual)
+  function minCostFlow() {
+    const supply = SUP.reduce((s, k) => s + st.b[k], 0), demand = DEM.reduce((s, k) => s + st.b[k], 0);
+    const nodes = ['S', 'T', 'tesoro', ...SUP, ...DEM];
+    const E = [];
+    const addE = (u, v, cap, cost, ref) => { E.push({ u, v, cap, cost, flow: 0, ref }); E.push({ u: v, v: u, cap: 0, cost: -cost, flow: 0, rev: true }); return E.length - 2; };
+    SUP.forEach(s => addE('S', s, st.b[s], 0));
+    DEM.forEach(d => addE(d, 'T', st.b[d], 0));
+    if (demand > supply) addE('S', 'tesoro', demand - supply, 0);
+    if (supply > demand) addE('tesoro', 'T', supply - demand, 0);
+    arcs.forEach((a, k) => { a.idx = addE(a.from, a.to, 1e9, a.c, k); a.flow = 0; });
+    const total = Math.max(supply, demand);
+    let sent = 0, cost = 0;
+    while (sent < total - 1e-9) {
+      const dist = Object.fromEntries(nodes.map(n => [n, Infinity])), prev = {};
+      dist.S = 0;
+      for (let it = 0; it < nodes.length; it++) {
+        let ch = false;
+        E.forEach((e, k) => { const r = e.cap - e.flow; if (r > 1e-9 && dist[e.u] + e.cost < dist[e.v] - 1e-12) { dist[e.v] = dist[e.u] + e.cost; prev[e.v] = k; ch = true; } });
+        if (!ch) break;
+      }
+      if (!isFinite(dist.T)) break;
+      let f = Infinity;
+      for (let v = 'T'; v !== 'S'; v = E[prev[v]].u) f = Math.min(f, E[prev[v]].cap - E[prev[v]].flow);
+      for (let v = 'T'; v !== 'S'; v = E[prev[v]].u) { const k = prev[v]; E[k].flow += f; E[k ^ 1].flow -= f; }
+      sent += f; cost += f * dist.T;
+    }
+    arcs.forEach(a => { a.flow = E[a.idx].flow; });
+    return { cost, supply, demand };
+  }
+
+  const svg = $('#mcf-map');
+  const P = makeProj(-71, -55, -21.8, -40.5, 420, 470, 10);
+  function solve() {
+    const res = minCostFlow();
+    svg.innerHTML = '';
+    S('rect', { x: 0, y: 0, width: 420, height: 470, fill: '#fff' }, svg);
+    S('path', { d: polyPath(ARG_POLY.map(([a, b]) => P(a, b))), fill: 'var(--land)', stroke: '#fff' }, svg);
+    const maxF = Math.max(1, ...arcs.map(a => a.flow));
+    arcs.filter(a => a.flow > 1e-6).forEach(a => {
+      const p1 = P.node(NODE[a.from]), p2 = P.node(NODE[a.to]);
+      const arc = arcPath(p1, p2, 0.15);
+      S('path', { d: arc.d, fill: 'none', stroke: '#16324f', 'stroke-width': 1.5 + 7 * a.flow / maxF, opacity: .75, 'marker-end': 'url(#arrow-head-navy)' }, svg);
+      const [mx, my] = quadPoint(p1, arc.c, p2, 0.42);
+      S('rect', { x: mx - 18, y: my - 8, width: 36, height: 15, rx: 7, fill: '#fff', stroke: '#16324f' }, svg);
+      S('text', { x: mx, y: my + 3.5, 'text-anchor': 'middle', 'font-size': 10, 'font-weight': 800, fill: '#16324f', text: nf(a.flow) }, svg);
+    });
+    const node = (id, color, txt) => {
+      const [x, y] = P.node(NODE[id]);
+      if (id === 'tesoro') S('use', { href: '#ico-vault', x: x - 13, y: y - 13, width: 26, height: 26 }, svg);
+      else S('circle', { cx: x, cy: y, r: 9, fill: color, stroke: '#fff', 'stroke-width': 2 }, svg);
+      S('text', { x: x + 13, y: y + 4, 'font-size': 11, 'font-weight': 700, fill: '#1f2430', text: txt }, svg);
+    };
+    SUP.forEach(s => node(s, '#1b9e6e', `${NODE[s].name} +${nf(st.b[s])}`));
+    DEM.forEach(d => node(d, '#c0392b', `${NODE[d].name} −${nf(st.b[d])}`));
+    const diff = res.supply - res.demand;
+    node('tesoro', '', `Tesoro ${diff > 0 ? 'recibe ' + nf(diff) : diff < 0 ? 'pone ' + nf(-diff) : '(equilibrado)'}`);
+    S('text', { x: 10, y: 462, 'font-size': 10.5, fill: '#6f7482', text: '● verde: sobra · ● rojo: falta · el grosor de la flecha es el flujo en $M' }, svg);
+    const used = arcs.filter(a => a.flow > 1e-6);
+    $('#mcf-out').innerHTML = `<table class="cost-table"><thead><tr><th>Envío</th><th>Ruta (Dijkstra)</th><th class="num">$M</th><th class="num">c/$M</th><th class="num">Costo</th></tr></thead><tbody>
+      ${used.map(a => `<tr><td>${NODE[a.from].name} → ${NODE[a.to].name}</td><td class="small">${a.r.legs.map(legDesc).join(' + ')}</td><td class="num">${nf(a.flow)}</td><td class="num">${fmtM(a.c)}</td><td class="num">${fmtM(a.flow * a.c)}</td></tr>`).join('')}
+      <tr class="total"><td colspan="4">Costo total mínimo (LP linealizado)</td><td class="num">${fmtM(res.cost)}</td></tr></tbody></table>
+      <p class="small muted" style="margin-top:6px">Es el <b>problema de transporte con transbordo</b> de la clase 19–20, resuelto como Flujo de Mínimo Costo con caminos más cortos sucesivos. Al linealizar el básico queda un LP. Con el básico como costo fijo (binaria) y los octopacks enteros pasa a ser un MILP.</p>`;
+  }
+  const refresh = () => { buildArcs(); solve(); };
+  G.on(refresh);
+  setTimeout(refresh);
+  return { refresh };
+})();
+
+$('#extras').innerHTML = `
+  <div class="card card-pad stack">
+    <h3>Guion sugerido para la clase</h3>
+    <div class="guion"><ol>
+      <li><b>Bóveda (solapa 1):</b> que un alumno mueva las palancas hasta romper el stock de seguridad. ¿Qué palanca es la única que decidimos nosotros?</li>
+      <li><b>AMBA:</b> prender y apagar el abono. ¿Por qué con abono conviene ir todos los días y sin abono no?</li>
+      <li><b>Provincias:</b> Salta con Brinks (no llega), después Orán (sin aeropuerto) → aparece el combinado con Transp. del Interior. Mirar el ranking: es Dijkstra.</li>
+      <li><b>¿Y si no lo muevo?:</b> la cadena de Markov y el día de equilibrio d* = costo de mover / (monto × TNA/365).</li>
+      <li><b>Proyección (solapa 2):</b> cambiar el percentil de P50 a P95 y discutir el costo de la cobertura. Activar “qué pasó con lo real”.</li>
+      <li><b>Cierre:</b> escribir entre todos el MILP y la red del día (solapa 3).</li>
+    </ol></div>
+  </div>
+  <div class="card card-pad stack">
+    <h3>Puentes con otras unidades de la materia</h3>
+    <ul class="clean small">
+      <li><b>Markov (clases 3–5):</b> la plata parada como estado transitorio y la sucursal destino como estado absorbente. E[días en bóveda] = 1/(1−p).</li>
+      <li><b>Filas de espera (clases 6–8):</b> ventanilla y ATM son servidores. Si la bóveda queda corta, la fila se transforma en clientes sin atender.</li>
+      <li><b>Programación no lineal (clase 21):</b> el pronóstico es una regresión no lineal (Transformer) que se entrena minimizando una pérdida.</li>
+      <li><b>Inventarios (clases 23–24):</b> mover seguido (costo de pedido) contra tener plata parada (costo de mantener) es el mismo trade-off del lote económico (EOQ). El stock de seguridad y el percentil de cobertura son el nivel de servicio.</li>
+    </ul>
+  </div>`;
+</script>
+</body>
+</html>

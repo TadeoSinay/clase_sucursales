@@ -306,6 +306,11 @@
     <div class="card scene-card">
       <svg id="scene" viewBox="0 0 1400 640" role="img" aria-label="Bóveda animada con palancas de depósitos, ventanilla, ATM y camión de caudales"></svg>
       <div class="scene-bar">
+        <span class="ctrl">Modo
+          <span class="seg" id="vault-mode">
+            <button aria-pressed="true" data-v="sim">▶ Simulación</button><button aria-pressed="false" data-v="vacia">📸 Bóveda vacía</button><button aria-pressed="false" data-v="llena">📸 Bóveda llena</button>
+          </span>
+        </span>
         <button class="btn primary" id="sim-play">⏸ Pausa</button>
         <span class="ctrl">Velocidad
           <span class="seg" id="sim-speed">
@@ -823,7 +828,7 @@ const Vault = (() => {
   const svg = $('#scene');
   const TOPE = 1200, MIN_HIST = 300, SS = 1.10 * MIN_HIST, SALDO0 = 620;
   const DAY_SECONDS = 4;
-  const st = { t: 0, saldo: SALDO0, ocio: 0, mov: 0, dest: 'cib', playing: true, speed: 1, hist: [], quiebre: false };
+  const st = { t: 0, saldo: SALDO0, ocio: 0, mov: 0, dest: 'cib', playing: true, speed: 1, hist: [], quiebre: false, mode: 'sim' };
   // pre-historia (para mostrar de dónde sale el mínimo histórico)
   const pre = [];
   for (let k = -30; k < 0; k++) pre.push({ d: k, s: 640 + 110 * Math.sin(k / 3.7) + 40 * Math.cos(k / 1.3) - (k === -12 ? 260 : k === -11 || k === -13 ? 120 : 0) });
@@ -1030,7 +1035,8 @@ const Vault = (() => {
   }
 
   // ── Palancas ──────────────────────────────────────────
-  const cable = (x1, y1, x2, y2) => S('path', { d: `M${x1},${y1} L${x2},${y2}`, stroke: '#9aa3ae', 'stroke-width': 2, 'stroke-dasharray': '4 4', fill: 'none' }, svg);
+  const cables = [];
+  const cable = (x1, y1, x2, y2) => cables.push(S('path', { d: `M${x1},${y1} L${x2},${y2}`, stroke: '#9aa3ae', 'stroke-width': 2, 'stroke-dasharray': '4 4', fill: 'none' }, svg));
   cable(125, 160, 125, 178); cable(1010, 160, 1010, 196); cable(1189, 160, 1189, 238); cable(1316, 160, 1316, 430);
   const levers = {};
   const unit = v => `${nf(v)} $M/día`;
@@ -1090,7 +1096,7 @@ const Vault = (() => {
     const neto = dep - vent - atm;
     const day = Math.floor(st.t) + 1;
     K.dia.v.textContent = nf(day);
-    K.dia.n.textContent = st.playing ? 'simulando…' : 'en pausa';
+    K.dia.n.textContent = st.mode !== 'sim' ? '📸 modo foto (congelado)' : st.playing ? 'simulando…' : 'en pausa';
     K.saldo.v.textContent = fmtM(st.saldo, { d: 0 });
     K.saldo.n.textContent = `sobre el SS: ${fmtM(Math.max(0, st.saldo - SS), { d: 0 })}`;
     K.flujo.v.textContent = (neto >= 0 ? '+' : '−') + fmtM(Math.abs(neto), { d: 0 }).replace('$', '$');
@@ -1185,11 +1191,15 @@ const Vault = (() => {
 
   // ── Controles ─────────────────────────────────────────
   const playBtn = $('#sim-play');
-  playBtn.addEventListener('click', () => { st.playing = !st.playing; playBtn.textContent = st.playing ? '⏸ Pausa' : '▶ Seguir'; updateUI(); });
+  playBtn.addEventListener('click', () => {
+    if (st.mode !== 'sim') { setMode('sim'); return; }
+    st.playing = !st.playing; playBtn.textContent = st.playing ? '⏸ Pausa' : '▶ Seguir'; updateUI();
+  });
   $$('#sim-speed button').forEach(b => b.addEventListener('click', () => {
     st.speed = +b.dataset.v; $$('#sim-speed button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
   }));
   $('#sim-reset').addEventListener('click', () => {
+    if (st.mode !== 'sim') setMode('sim');
     Object.assign(st, { t: 0, saldo: SALDO0, ocio: 0, mov: 0, hist: [], quiebre: false });
     parts.forEach(p => p.el.remove()); parts.length = 0;
     levers.dep.set(80, true); levers.vent.set(45, true); levers.atm.set(60, true); levers.cam.set(0, true);
@@ -1209,6 +1219,101 @@ const Vault = (() => {
     const to = NODE.c7, r = bestRoute(TESORO, to, M, { abono: { brinks: 0, prosegur: 0 }, usados: { brinks: 0, prosegur: 0 } });
     Markov.open({ source: 'escena de la bóveda', fromName: 'la bóveda (lo que sobra arriba del stock de seguridad)', to, M, cost: r.total, days: 0, label: r.legs.map(legDesc).join(' + '), sym: '#ico-truck' });
   });
+  // ── Modo foto: bóveda vacía / bóveda llena (estado congelado para explicar) ──
+  const photoG = S('g', { 'pointer-events': 'none' }, null);
+  let snapshot = null;
+  const wrap = (txt, n) => { const out = []; let line = ''; txt.replace(/(\$[\d.,]+) (M|mil)/g, '$1\u00a0$2').split(' ').forEach(w => { if ((line + ' ' + w).trim().length > n) { out.push(line); line = w; } else line = (line + ' ' + w).trim(); }); if (line) out.push(line); return out; };
+  function bubble(x, y, w, txt) {
+    S('rect', { x, y, width: w, height: 24, rx: 12, fill: '#fff', stroke: '#c0392b', 'stroke-width': 2 }, photoG);
+    S('path', { d: `M${x + w / 2 - 6},${y + 23} l6,10 l6,-10z`, fill: '#fff', stroke: '#c0392b', 'stroke-width': 2 }, photoG);
+    S('rect', { x: x + w / 2 - 7, y: y + 20, width: 14, height: 5, fill: '#fff' }, photoG);
+    S('text', { x: x + w / 2, y: y + 16.5, 'text-anchor': 'middle', 'font-size': 11.5, 'font-weight': 800, fill: '#8c2318', text: txt }, photoG);
+  }
+  function drawPhoto(mode) {
+    photoG.innerHTML = '';
+    const vacia = mode === 'vacia', col = vacia ? '#c0392b' : '#b7791f';
+    // bloque izquierdo: título
+    S('rect', { x: 18, y: 12, width: 404, height: 150, rx: 14, fill: '#fff', stroke: col, 'stroke-width': 3 }, photoG);
+    S('rect', { x: 34, y: 26, width: 98, height: 20, rx: 10, fill: col }, photoG);
+    S('text', { x: 83, y: 40, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 800, fill: '#fff', 'letter-spacing': 1.5, text: 'MODO FOTO' }, photoG);
+    S('text', { x: 34, y: 86, 'font-size': 34, 'font-weight': 800, fill: col, text: vacia ? 'Bóveda vacía' : 'Bóveda llena' }, photoG);
+    S('text', { x: 34, y: 112, 'font-size': 14, 'font-weight': 700, fill: '#1f2430', text: vacia ? `Saldo $0 · stock de seguridad ${fmtM(SS, { d: 0 })}` : `Saldo ${fmtM(st.saldo, { d: 0 })} · tope del seguro ${fmtM(TOPE, { d: 0 })}` }, photoG);
+    S('text', { x: 34, y: 134, 'font-size': 12, fill: '#5b6070', text: vacia ? 'Le faltó plata: el flujo neto se la comió.' : 'Le sobra plata: entra más de lo que sale.' }, photoG);
+    S('text', { x: 34, y: 152, 'font-size': 11, fill: '#8a8f9c', text: 'la simulación está congelada · “▶ Simulación” para volver' }, photoG);
+    // bloque derecho: qué pasa, qué cuesta, qué hacemos
+    const ocioDia = st.saldo * G.iDay;
+    const items = vacia ? [
+      ['¿Qué pasa?', 'No hay efectivo para la caja ni para el ATM: clientes sin atender. Es un quiebre de stock.'],
+      ['¿Qué cuesta?', 'Reclamos, clientes que se van y una remesa urgente, que siempre es más cara. Costo ocioso: $0.'],
+      ['¿Qué hacemos?', `Traer remesa antes de tocar el stock de seguridad (${fmtM(SS, { d: 0 })}): ese es el colchón.`],
+    ] : [
+      ['¿Qué pasa?', 'Plata parada que no rinde y que además supera el tope que cubre el seguro.'],
+      ['¿Qué cuesta?', `Costo ocioso = ${fmtM(st.saldo, { d: 0 })} × ${pct(G.tna)}/365 ≈ ${fmtM(ocioDia)} por día, todos los días.`],
+      ['¿Qué hacemos?', 'Evacuar el excedente: CIB ($0 si hay turno), otra sucursal con faltante u otro banco.'],
+    ];
+    S('rect', { x: 858, y: 12, width: 524, height: 150, rx: 14, fill: '#fff', stroke: col, 'stroke-width': 3 }, photoG);
+    let y = 38;
+    items.forEach(([k, txt]) => {
+      S('text', { x: 876, y, 'font-size': 13, 'font-weight': 800, fill: col, text: k }, photoG);
+      wrap(txt, 58).forEach((ln, i) => S('text', { x: 980, y: y + i * 15, 'font-size': 12, fill: '#1f2430', text: ln }, photoG));
+      y += 15 * Math.max(1, wrap(txt, 58).length) + 9;
+    });
+    if (vacia) {
+      // telaraña en la bóveda
+      const web = S('g', { 'clip-path': 'url(#vault-clip)', stroke: '#c9d1da', 'stroke-width': 1.3, fill: 'none', opacity: .9 }, photoG);
+      const ox = cx - 80, oy = cy - 78;
+      for (let k = 0; k <= 5; k++) { const a = k / 5 * Math.PI / 2; S('line', { x1: ox, y1: oy, x2: ox + Math.cos(a) * 95, y2: oy + Math.sin(a) * 95 }, web); }
+      [25, 45, 65, 85].forEach(r => S('path', { d: Array.from({ length: 6 }, (_, k) => { const a = k / 5 * Math.PI / 2; return `${k ? 'L' : 'M'}${ox + Math.cos(a) * r},${oy + Math.sin(a) * r}`; }).join('') }, web));
+      S('text', { x: cx, y: cy + 8, 'text-anchor': 'middle', 'font-size': 26, 'font-weight': 800, fill: '#e34948', opacity: .85, 'letter-spacing': 4, text: 'VACÍA' }, photoG);
+      // sin efectivo en caja y ATM
+      S('rect', { x: 1160, y: 268, width: 58, height: 38, rx: 3, fill: '#c0392b' }, photoG);
+      S('text', { x: 1189, y: 284, 'text-anchor': 'middle', 'font-size': 9, 'font-weight': 800, fill: '#fff', text: 'SIN' }, photoG);
+      S('text', { x: 1189, y: 297, 'text-anchor': 'middle', 'font-size': 9, 'font-weight': 800, fill: '#fff', text: 'EFECTIVO' }, photoG);
+      S('rect', { x: 955, y: 262, width: 100, height: 22, rx: 5, fill: '#c0392b' }, photoG);
+      S('text', { x: 1005, y: 277, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': 800, fill: '#fff', text: 'SIN EFECTIVO' }, photoG);
+      bubble(1052, 214, 96, '¿Y la plata?');
+      bubble(1238, 214, 116, '¡No sale nada!');
+    } else {
+      // la plata se rebalsa al piso
+      [[0, 9], [1, 7], [2, 5]].forEach(([row, nb]) => {
+        const y0 = 410 - row * 14, x0 = 640 - nb * 31 / 2;
+        for (let i = 0; i < nb; i++) {
+          S('rect', { x: x0 + i * 31, y: y0, width: 28, height: 13, rx: 2, fill: '#3f9a62', stroke: '#24603c' }, photoG);
+          S('rect', { x: x0 + i * 31 + 11, y: y0, width: 6, height: 13, fill: '#e8d9a8' }, photoG);
+        }
+      });
+      [[468, 398], [770, 398], [790, 384]].forEach(([x, y0]) => S('use', { href: '#ico-octo', x, y: y0, width: 30, height: 24 }, photoG));
+      S('rect', { x: 560, y: 116, width: 160, height: 26, rx: 13, fill: '#b7791f' }, photoG);
+      S('text', { x: 640, y: 134, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 800, fill: '#fff', 'letter-spacing': 1, text: '⚠ SUPERA EL TOPE' }, photoG);
+    }
+  }
+  function setMode(mode) {
+    if (mode === st.mode) return;
+    if (st.mode === 'sim') snapshot = { saldo: st.saldo, playing: st.playing, quiebre: st.quiebre };
+    st.mode = mode;
+    $$('#vault-mode button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === mode)));
+    const photo = mode !== 'sim';
+    [...Object.values(levers).map(l => l.g), ...cables].forEach(el => el.style.display = photo ? 'none' : '');
+    parts.forEach(p => p.el.remove()); parts.length = 0;
+    if (photo) {
+      st.playing = false;
+      st.saldo = mode === 'vacia' ? 0 : TOPE * 1.25;
+      st.quiebre = mode === 'vacia';
+      if (mode === 'vacia') client.setAttribute('transform', 'translate(-200,425)');
+      else { client.setAttribute('transform', 'translate(150,425)'); bags.forEach(b => b.setAttribute('opacity', 1)); lastBags = 6; }
+      svg.appendChild(photoG);
+      drawPhoto(mode);
+      playBtn.textContent = '▶ Volver a simular';
+    } else {
+      photoG.remove();
+      Object.assign(st, snapshot || {});
+      playBtn.textContent = st.playing ? '⏸ Pausa' : '▶ Seguir';
+    }
+    drawSpark(); updateUI();
+  }
+  $$('#vault-mode button').forEach(b => b.addEventListener('click', () => setMode(b.dataset.v)));
+  G.on(() => { if (st.mode !== 'sim') drawPhoto(st.mode); });
+
   drawRoute();
   return { st, SS, TOPE };
 })();
